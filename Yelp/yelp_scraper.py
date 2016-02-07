@@ -2,6 +2,7 @@
 
 import bs4
 import requests
+import json
 
 def page_hopper(soup, domain):
 
@@ -41,10 +42,46 @@ def proof(starting_url, domain):
 
         new_pages = page_hopper(soup, domain)
         page_urls = page_urls.union(new_pages.difference(sites_visited))
-        print(page_urls)
+
         new_restuarants = restuarant_hopper(soup, domain)
         restuarant_urls = restuarant_urls.union(new_restuarants)
 
     return restuarant_urls
 
+def data_gather(url_list):
 
+    data_out = {}
+
+    for url in url_list:
+        data = requests.get(url)
+        soup = bs4.BeautifulSoup(data.content, "html5lib")
+        #coordinates
+        coordinate = soup.find('div', class_='lightbox-map hidden')
+        json_data = coordinate["data-map-state"]
+        json_string = json_data.replace("'", "\"")
+        d = json.loads(json_string)
+        data_out['lat'] = d['center']['latitude']
+        data_out['long'] = d['center']['longitude']
+        #exact score
+        scores = soup.find('table', class_="histogram histogram--alternating histogram--large")
+        stars = 5
+        score_count = 0
+        votes_count = 0
+        for score in scores.find_all("td", class_="histogram_count"):
+            num_votes = float(score.text)
+            votes_count = votes_count + num_votes
+            score_count = score_count +  num_votes * stars
+            stars = stars - 1
+        exact_score = score_count / votes_count
+        data_out["score"] = exact_score
+        #comments
+        #right now only scrapes first page of comments but we can (and probably should) reimplement
+        #it to take multiple
+        data_out["comments"] = []
+        for rating in soup.find_all("div", class_="review-content"):
+            for description in rating.find_all("p", itemprop="description"):
+                data_out["comments"].append(description.text)
+        #recommended food?
+    #save to json
+    with open('restuarant_data.json', 'w') as fp:
+        json.dump(data_out, fp)
