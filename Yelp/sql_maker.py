@@ -6,34 +6,24 @@ db = sqlite3.connect("restaurants.sqlite")
 
 c = db.cursor()
 
-c.execute("CREATE TABLE food    \
-         (timestamp text primary key,   \
-          lon numeric,   \
-          lat numeric,   \
-          rating numeric, \
-          review text)")
+time = "CREATE TABLE time (m_open numeric, m_closed numeric, t_open numeric, t_closed numeric, "
+time += "w_open numeric, w_closed numeric, r_open numeric, r_closed numeric, f_open numeric, f_closed numeric, "
+time += "sat_open numeric, sat_closed numeric, sun_open numeric, sun_closed numeric, name_id text);"
+yelp = "CREATE TABLE yelp (name_id text, price int, rating numeric);"
+maps = "CREATE TABLE maps (lon numeric, lat numeric, name_id text);"
 
-c.execute("DROP TABLE food")
-
+c.execute(time)
+c.execute(yelp)
+c.execute(maps)
 
 db.close()
+
+
+'''
 
 columns = ['long', 'lat', 'score', 'comments']
 for key in traffic:
     data = traffic[key]
     keys = (key,) + tuple(data[c] for c in columns)
     print(str(keys))
-
-
-'''
-query = "INSERT INTO medicoes values (?,?,?,?,?,?,?)"
-columns = ['local', 'coord', 'sentido', 'veiculos', 'modalidade', 'pistas']
-for timestamp, data in traffic.iteritems():
-    keys = (timestamp,) + tuple(data[c] for c in columns)
-    c = db.cursor()
-    c.execute(query, keys)
-    c.close()
-
-
-query = "CREATE TABLE "
 '''
