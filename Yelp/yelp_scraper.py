@@ -123,6 +123,17 @@ def data_gather(url_list):
                 close_time = hours[1].text
                 data_out[yelp_id]["hours"][day_of_week]["open"] = open_time
                 data_out[yelp_id]["hours"][day_of_week]["close"] = close_time
+        #type of resturant
+        restuarant_type = soup.find("span", class_="category-str-list").text.splitlines() #might need to include this strip method elsewhere
+        data_out[yelp_id]["rest_types"] = []
+        for types in restuarant_type:
+            desc = types.strip()
+            if desc != "":
+                data_out[yelp_id]["rest_types"].append(desc)
+        #extra info
+        for attribute in soup.find("div", class_="short-def-list").find_all("dl"):
+            data_out[yelp_id][attribute.find("dt", class_="attribute-key").text.strip()] = attribute.find("dd").text.strip()
+
     #save to json
     with open('restuarant_data.json', 'w') as fp:
         json.dump(data_out, fp)
