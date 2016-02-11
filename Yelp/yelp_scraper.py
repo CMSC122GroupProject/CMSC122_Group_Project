@@ -137,3 +137,5 @@ def data_gather(url_list):
     #save to json
     with open('restuarant_data.json', 'w') as fp:
         json.dump(data_out, fp)
+
+Example_0 = ["https://www.yelp.com/biz/chick-fil-a-chicago?osq=chik+fil+a","https://www.yelp.com/biz/valois-chicago"]
