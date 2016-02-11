@@ -135,12 +135,12 @@ def data_gather(url_list):
             data_out[yelp_id][attribute.find("dt", class_="attribute-key").text.strip()] = attribute.find("dd").text.strip()
 
     #save to json
-<<<<<<< HEAD
     with open('restuarant_data.json', 'w') as fp:
         json.dump(data_out, fp)
 
-Example_0 = ["https://www.yelp.com/biz/chick-fil-a-chicago?osq=chik+fil+a","https://www.yelp.com/biz/valois-chicago"]
-=======
     with open('restaurant_data.json', 'w') as fp:
         json.dump(data_out, fp)
->>>>>>> 6fca09ddc3213f39c7360e0dbb15e5feac31f397
+
+#example inputs for data_gather function
+
+Example_0 = ["https://www.yelp.com/biz/chick-fil-a-chicago?osq=chik+fil+a","https://www.yelp.com/biz/valois-chicago"]
