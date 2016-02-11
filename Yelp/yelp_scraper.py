@@ -135,5 +135,5 @@ def data_gather(url_list):
             data_out[yelp_id][attribute.find("dt", class_="attribute-key").text.strip()] = attribute.find("dd").text.strip()
 
     #save to json
-    with open('restuarant_data.json', 'w') as fp:
+    with open('restaurant_data.json', 'w') as fp:
         json.dump(data_out, fp)
