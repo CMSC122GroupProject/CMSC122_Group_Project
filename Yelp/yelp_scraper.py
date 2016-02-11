@@ -138,9 +138,6 @@ def data_gather(url_list):
     with open('restuarant_data.json', 'w') as fp:
         json.dump(data_out, fp)
 
-    with open('restaurant_data.json', 'w') as fp:
-        json.dump(data_out, fp)
-
 #example inputs for data_gather function
 
 Example_0 = ["https://www.yelp.com/biz/chick-fil-a-chicago?osq=chik+fil+a","https://www.yelp.com/biz/valois-chicago"]
