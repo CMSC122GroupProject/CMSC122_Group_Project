@@ -135,6 +135,10 @@ def prelim_assembly(sample):
 def prelim_algorithm(sample):
     if query_return != []:
         return query_return
+    else:
+        least = sample['preferences'][-1]
+        sample.pop(least, None)
+        prelim_algorithm(sample)
     #recursive strategy
    
 
