@@ -16,6 +16,13 @@
 #dict_api = {'yelp': ['name_id', 'price_lower', 'location_id', 'open_time', 'closing_time', 'food_spec'], 'maps' : ['distance', 'radius', 'location_id'], 
             #'twitter' : ['num_tweets', 'name_id']}
 #from haversine import haversine
+import sqlite3
+import os
+import re
+#from Yelp import restaurants.db
+DATA_DIR = os.path.dirname(__file__)
+DATABASE_FILENAME = os.path.join(DATA_DIR, 'Yelp/restaurants.db')
+
 
 dict_api = {'yelp' : ['name_id', 'price', 'rating'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
             'f_closed', 'sat_open', 'sat_closed', 'sun_open', 'sun_closed', 'name_id'], 'maps' : ['lon', 'lat', 'name_id']}
@@ -48,7 +55,7 @@ dict_what['sun_closed'] = ['time.sun_closed' + '<=' + '?']
 
 
 #sample input (needs to be ordered):
-sample = {'name_id':'Medici', 'price': 2, 'lon': 1.5, 'lat': 30, 'rating': 3.5, 'm_open' : 9, 'm_closed' : 11, 
+sample = {'name_id':'Medici', 'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 1 , 'm_open' : 800, 'm_closed' : 2100, 
 'preferences' : ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed' ] }
 
 def query_relations(sample):
@@ -106,13 +113,15 @@ def query_where(sample):
     parameters = list(dict_what.keys())
     inputs = sample['preferences']
     what_list = []
+    where_param = []
     for i in inputs:
         if i in parameters:
             if i == 'distance':
                 pass
             else:
                 what_list.append(dict_what[i])
-    return what_list
+                where_param.append(i)
+    return what_list, where_param
 
 def prelim_assembly(sample):
     SELECT = 'SELECT' + " "  + ",".join(query_select(sample))
@@ -125,22 +134,42 @@ def prelim_assembly(sample):
         on_list_filter.append("=".join(i))
     ON = "ON" + " " + " AND ".join(on_list_filter)
     where = []
-    for i in query_where(sample):
+    for i in query_where(sample)[0]:
         where = where + i
     WHERE = "WHERE" + " " + " AND ".join(where)
     query = SELECT + " " + FROM + " " + ON + " " + WHERE
-    return query
+    quest_which = []
+    for i in query_where(sample)[1]:
+        quest_which.append(sample[i])
+    return query, quest_which
 
 
 def prelim_algorithm(sample):
+    db = sqlite3.connect(DATABASE_FILENAME)
+    c = db.cursor()
+    s = prelim_assembly(sample)[0]
+    args = prelim_assembly(sample)[1]
+    print(s, args)
+    r = c.execute(s, args)
+    result = r.fetchall()
+    
+    #db.close()
+    return result
+
+def algorithm(sample):
+
+
+
+    '''
     if query_return != []:
         return query_return
     else:
         least = sample['preferences'][-1]
         sample.pop(least, None)
+        sample['preferences'].remove(least)
         prelim_algorithm(sample)
     #recursive strategy
-   
+   '''
 
 
 
