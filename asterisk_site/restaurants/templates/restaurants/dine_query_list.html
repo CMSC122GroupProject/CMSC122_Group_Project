@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <title>Aster*sk Restaurant Queries</title>
+    </head>
+    <body>
+        <div>
+
+            <p> Welcome to the restaurant query page of the Aster*sk Project. </p>
+            <p> Use the link below to search for optimal restaurants, given your parameters. </p>
+
+
+        </div>
+
+        <div>
+
+            <h1>  <a href="{% url 'dine_query_new' %}">New Restaurant Query Form</a>  </h1>
+        </div>
+        <p> Below are past restaurant queries that have yet to be processed </p>
+        {% for query in dining_queries   %}
+
+            <div>
+                <p> Restaurant query: {{query}}
+            
+
+
+           
+            </div>
+        {% endfor %}
+        
+    </body>
+</html>
