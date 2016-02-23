@@ -1,31 +1,50 @@
+{% load staticfiles %}
 <html>
     <head>
         <title>Aster*sk Restaurant Queries</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/restaurants.css' %}">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rancho&effect=shadow-multiple">
+
     </head>
+    <div>
+
+        <h1 class = "page-header">  Aster*sk Project </h1>
+        <p> <strong> The perfect start to every night on the town </strong> </p> 
+    </div>
     <body>
         <div>
 
-            <p> Welcome to the restaurant query page of the Aster*sk Project. </p>
+            <h2> Restaurant Queries </h2>
             <p> Use the link below to search for optimal restaurants, given your parameters. </p>
 
 
-        </div>
-
-        <div>
-
-            <h1>  <a href="{% url 'dine_query_new' %}">New Restaurant Query Form</a>  </h1>
-        </div>
-        <p> Below are past restaurant queries that have yet to be processed </p>
-        {% for query in dining_queries   %}
+        
 
             <div>
-                <p> Restaurant query: {{query}}
-            
 
-
-           
+                <h3>  <a href="{% url 'dine_query_new' %}">New Restaurant Query Form</a>  </h3>
             </div>
-        {% endfor %}
-        
+            <br></br>
+            <p> Below are past restaurant queries, to be processed: </p>
+            <ul>
+            {% for query in dining_queries   %}
+
+                <div>
+                    <li>  {{query}} </li>
+
+                </div>
+            {% endfor %}
+            </ul>
+
+            <p> Processed queries are also below: </p>
+            {% for result in dining_query_results %}
+                <div>  
+                    <p> Processed Query: {{result}} </p>
+
+                </div>
+            {%  endfor %}
+        </div>
     </body>
 </html>
