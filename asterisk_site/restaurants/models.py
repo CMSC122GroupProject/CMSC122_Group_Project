@@ -13,7 +13,7 @@ class Dine_query(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
 
     def __repr__(self):
-        return 'Dining-Parameters({}, {}, {}, {}, {}, {})'.format(self.name, self.price, self.desired_rating, self.opening_time, self.closing_time, self.distance)
+        return '{}: Price: {}, Desired Rating: {}, Opening Time: {}, Closing Time: {}, Distance: {}'.format(self.name, self.price, self.desired_rating, self.opening_time, self.closing_time, self.distance)
 
     def __str__(self):
-        return 'Dining-Parameters({}, {}, {}, {}, {}, {})'.format(self.name, self.price, self.desired_rating, self.opening_time, self.closing_time, self.distance)
+        return '{}: Price: {}, Desired Rating: {}, Opening Time: {}, Closing Time: {}, Distance: {}'.format(self.name, self.price, self.desired_rating, self.opening_time, self.closing_time, self.distance)
