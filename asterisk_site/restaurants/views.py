@@ -7,9 +7,9 @@ from .forms import DineQueryForm
 import sqlite3
 import os
 import re
-#DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
+DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
 DATA_DIR = os.path.dirname(__file__)
-DATABASE_FILENAME = os.path.join(DATA_DIR, 'asterisk_site/restaurants.db')
+#DATABASE_FILENAME = os.path.join(DATA_DIR, 'restaurants/restaurants.db')
 day_dict = {'Monday': ('m_open', 'm_closed'), 'Tuesday': ('t_open', 't_closed'), 'Wednesday': ('w_open', 'w_closed'), 'Thursday': ('r_open', 'r_closed'),
                 'Friday' : ('f_open', 'f_closed'), 'Saturday' : ('sat_open', 'sat_closed'), 'Sunday' : ('sun_open', 'sun_closed')}
 
@@ -18,7 +18,21 @@ day_dict = {'Monday': ('m_open', 'm_closed'), 'Tuesday': ('t_open', 't_closed'),
 def dine_query_list(request):
     dining_queries = Dine_query.objects.order_by('created_date')
     #print('hello')
-    return render(request, 'restaurants/dine_query_list.html', {'dining_queries': dining_queries })
+    print('did it run')
+    results = []
+    for query in dining_queries:
+        day = query.day
+        print(day)
+        times = day_dict[day]
+        sample = {'name_id': query.name, 'price': query.price, 'rating': query.desired_rating , times[0] : query.opening_time, times[1] : query.closing_time, 
+                'preferences' : ['name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
+        algo = algorithm(sample)
+        results.append((query, algo))
+        print('it worked!!!!!!!!!!!!!' , results)
+    #return results
+    #return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': results })
+
+    return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': results }) 
 
 def dine_query_new(request):
     if request.method == "POST":
@@ -31,7 +45,7 @@ def dine_query_new(request):
 
     
     return render(request, 'restaurants/dine_query_edit.html', {'form': form})
-
+'''
 def dine_query_algo(request):
     dining_queries = Dine_query.objects.order_by('created_date')
     print('did it run')
@@ -47,7 +61,7 @@ def dine_query_algo(request):
     #return results
     return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': results })
 
-
+'''
 
 
 
@@ -80,6 +94,7 @@ dict_what['sat_open'] = ['time.sat_open' + '>=' + '?']
 dict_what['sat_closed'] = ['time.sat_closed' + '<=' + '?']
 dict_what['sun_open'] = ['time.sun_open' + '>=' + '?']
 dict_what['sun_closed'] = ['time.sun_closed' + '<=' + '?']
+dict_what['name_id'] = ['yelp.name_id'  + '=' + '?']
 
 
 
@@ -172,6 +187,7 @@ def prelim_assembly(sample):
 
 
 def prelim_algorithm(sample):
+    print(DATABASE_FILENAME)
     db = sqlite3.connect(DATABASE_FILENAME)
     c = db.cursor()
     s = prelim_assembly(sample)[0]
