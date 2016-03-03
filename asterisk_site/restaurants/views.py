@@ -21,23 +21,24 @@ def dine_query_list(request):
     dining_queries = Dine_query.objects.order_by('created_date')
     #print('hello')
     print('did it run')
-    results = []
+    #results = []
     for query in dining_queries:
+        #assuming of course we just have one query############
         day = query.day
-        print(day)
+        #print(day)
         times = day_dict[day]
         #lat = query.latitude
         #ssslon = query.longitude
-        lon, lat = query.get_lon_lat()
+        #query.get_lon_lat()
         sample = {'name_id': query.name, 'price': query.price, 'rating': query.desired_rating , times[0] : query.opening_time, times[1] : query.closing_time, 
-                'lat': lat, 'lon' : lon, 'preferences' : ['name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
+                  'preferences' : ['name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
         algo = algorithm(sample)
-        results.append((query, algo))
-        print('it worked!!!!!!!!!!!!!' , results)
+
+        #results.append(algo)
     #return results
     #return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': results })
 
-    return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': results }) 
+    return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': list(algo) }) 
 
 def dine_query_new(request):
     if request.method == "POST":

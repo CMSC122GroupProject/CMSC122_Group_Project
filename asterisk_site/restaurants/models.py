@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-import geocoder
+#from googlemaps import Client
 
 class Dine_query(models.Model):
     name = models.CharField(max_length=64)
@@ -23,13 +23,22 @@ class Dine_query(models.Model):
     def __str__(self):
         return '{}: Price: {}, Desired Rating: {}, Opening Time: {}, Closing Time: {}, Distance: {}'.format(self.name, self.price, self.desired_rating, self.opening_time, self.closing_time, self.distance)
 
+        '''
     def get_lon_lat(self):
+        gmaps = googlemaps.Client(key='AIzaSyDoV3acX1mSLi3V1FWT__mjIaoq5QdHlg0')
+        address = self.current_location
+        city = self.current_city
+        geocode_result = gmaps.geocode(",".join(("address", "city")))
+        (self.longitude, self.latitude) = geocode_result
+
+        '''
+        '''
         address = self.current_location
         city = self.current_city
         g = geocoder.google(",".join(("address", "city")))
         (self.longitude, self.latitude) = g.latlng
         return self.longitude, self.latitude
-
+        '''
 
 
         '''
@@ -39,3 +48,4 @@ class Dine_query(models.Model):
         location = geolocator.geocode("address" + "city")  
         (self.longitude, self.latitude) = (location.longitude, location.latitude)
         '''
+
