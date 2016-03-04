@@ -8,9 +8,9 @@ def travel_time(origin_lat,origin_long,dest_lat,dest_long,travel_mode='driving')
     dest_coord = str(dest_lat)+','+str(dest_long)
     url = "http://maps.googleapis.com/maps/api/distancematrix/json?origins="+orig_coord+"&destinations="+dest_coord+"&mode="+travel_mode+"&language=en-EN&sensor=false"
     result= json.loads(requests.get(url).text)
-    driving_time = result['rows'][0]['elements'][0]['duration']['value']
+    time = result['rows'][0]['elements'][0]['duration']['value']
 
-    return driving_time
+    return time
 #might need to implement cases based on "status"
 #can also use "text" key to make output easier
 '''
@@ -38,3 +38,16 @@ Sample json output
    "status" : "OK"
 }
 '''
+
+def get_coordinates(address):
+    '''
+    example_url = 'http://maps.google.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&sensor=false'
+    '''
+    address = address.replace(' ', '+')
+
+    url = 'http://maps.google.com/maps/api/geocode/json?address=' + address + '&sensor=false'
+    result= json.loads(requests.get(url).text)
+
+    (lat, lng) = (result['results'][0]['geometry']['location']['lat'], result['results'][0]['geometry']['location']['lng'])
+
+    return (lat, lng)
