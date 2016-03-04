@@ -100,14 +100,18 @@ def query_join(sample):
 
 
 def query_select(sample):
-    #CHANGGEEEEEEEEEEEEE
+    
     relations = query_relations(sample)
     select_list = []
     count = []
     samples = list(sample.keys())
-    for param in samples:
+    print('sample:', samples)
+    print('relations:', relations)
+    #for param in sample:
+    for param in desired_output:
         for table in relations:
-            if param in dict_api[table] and param in desired_output and param not in count:
+            #if param in dict_api[table] and param in desired_output and param not in count:
+            if param in dict_api[table] and param not in count:
                 select_list.append(".".join((table, param)))
                 count.append(param)
     return select_list
