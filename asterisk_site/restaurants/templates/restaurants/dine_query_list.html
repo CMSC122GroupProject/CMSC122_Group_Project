@@ -1,5 +1,5 @@
 {% load staticfiles %}
-<html>
+<html >
     <head>
         <title>Aster*sk Restaurant Queries</title>
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -13,10 +13,10 @@
         <h1 class = "page-header">  Aster*sk Project </h1>
         <p> <strong> The perfect start to every night on the town </strong> </p> 
     </div>
-    <body>
+    <body >
         <div>
 
-            <h2> Restaurant Queries </h2>
+            <h2>  Restaurant Queries  </h2>
             <p> Use the link below to search for optimal restaurants, given your parameters. </p>
 
 
@@ -24,27 +24,35 @@
 
             <div>
 
-                <h3>  <a href="{% url 'dine_query_new' %}">New Restaurant Query Form</a>  </h3>
+                <h5>   <a href="{% url 'dine_query_new' %}">New Restaurant Query Form</a>   </h5>
             </div>
             <br></br>
-            <p> Below are past restaurant queries, to be processed: </p>
-            <ul>
-            {% for query in dining_queries   %}
-
-                <div>
-                    <li>  {{query}} </li>
-
-                </div>
-            {% endfor %}
-            </ul>
+            
+            
 
             <p> Processed queries are also below: </p>
-            {% for result in dining_query_results %}
-                <div>  
-                    <p> Processed Query: {{result}} </p>
+        
 
-                </div>
-            {%  endfor %}
+            <table  id = " t01">
+                <tr class = 'tr'>
+                    <th class = "th"> Restaurants </th>
+                    <th class = "th"> Price (1-5) </th>
+                    <th class = "th"> Rating (1-5) </th>
+                </tr>
+                {% for result in dining_query_results %}
+            
+                <tr> 
+                    {% for entry in result %} 
+                    <td class = "td"> {{entry}} </td>
+                     
+
+                    {% endfor %}
+
+                </tr>
+                
+                {%  endfor %}
+            </table>
+            
         </div>
     </body>
 </html>

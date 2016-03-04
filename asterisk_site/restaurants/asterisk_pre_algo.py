@@ -30,6 +30,7 @@ dict_api = {'yelp' : ['name_id', 'price', 'rating'], 'time' : ['m_open', 'm_clos
 
 #not all of the attributes in our sample input would be included in output-some will be in the where statment etc
 desired_output = ['name_id', 'price', 'rating']
+ORDER_BY = 'ORDER BY yelp.name_id, yelp.price, yelp.rating' 
 
 #some tables more important than others-eg yelp table more important than twitter etc
 tables = ['yelp', 'time', 'maps']
@@ -99,13 +100,18 @@ def query_join(sample):
 
 
 def query_select(sample):
+    
     relations = query_relations(sample)
     select_list = []
     count = []
     samples = list(sample.keys())
-    for param in samples:
+    print('sample:', samples)
+    print('relations:', relations)
+    #for param in sample:
+    for param in desired_output:
         for table in relations:
-            if param in dict_api[table] and param in desired_output and param not in count:
+            #if param in dict_api[table] and param in desired_output and param not in count:
+            if param in dict_api[table] and param not in count:
                 select_list.append(".".join((table, param)))
                 count.append(param)
     return select_list
@@ -139,7 +145,7 @@ def prelim_assembly(sample):
     for i in query_where(sample)[0]:
         where = where + i
     WHERE = "WHERE" + " " + " AND ".join(where)
-    query = SELECT + " " + FROM + " " + ON + " " + WHERE
+    query = SELECT + " " + FROM + " " + ON + " " + WHERE + " " + ORDER_BY
     quest_which = []
     for i in query_where(sample)[1]:
         quest_which.append(sample[i])
