@@ -1,7 +1,7 @@
 import sqlite3
 import os
 import re
-DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
+DATABASE_FILENAME = '/home/student/CMSC122_Group_Project/asterisk_site/restaurants.db'
 dict_api = {'yelp' : ['name_id', 'price', 'rating'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
             'f_closed', 'sat_open', 'sat_closed', 'sun_open', 'sun_closed', 'name_id'], 'maps' : ['lon', 'lat', 'name_id']}
 
@@ -30,9 +30,19 @@ dict_what['sat_open'] = ['time.sat_open' + '>=' + '?']
 dict_what['sat_closed'] = ['time.sat_closed' + '<=' + '?']
 dict_what['sun_open'] = ['time.sun_open' + '>=' + '?']
 dict_what['sun_closed'] = ['time.sun_closed' + '<=' + '?']
+#####################kensertion#################
+dict_what['words'] = ['yelp.comments REGEXP ?']
+################################################
+sample = {'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 
+'preferences' : ['distance', 'price', 'rating', 'm_open', 'm_closed' ] }
 
-sample = {'name_id':'KFC', 'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 
-'preferences' : ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed' ] }
+#################kensertion#################
+def regexp(expr, item):
+    reg = re.compile(expr)
+    return reg.search(item) is not None
+
+#c.execute('SELECT bar FROM foo WHERE bar REGEXP ?',[search])
+############################################
 
 def query_relations(sample):
     relation_list = []
@@ -44,7 +54,6 @@ def query_relations(sample):
                 break
             elif param in dict_api[table] and table not in relation_list:
                 relation_list.append(table)
-
     return  relation_list
 
 def query_join(sample):
@@ -83,7 +92,6 @@ def query_select(sample):
     #for param in sample:
     for param in desired_output:
         for table in relations:
-            #if param in dict_api[table] and param in desired_output and param not in count:
             if param in dict_api[table] and param not in count:
                 select_list.append(".".join((table, param)))
                 count.append(param)
@@ -127,10 +135,13 @@ def prelim_assembly(sample):
 
 def prelim_algorithm(sample):
     db = sqlite3.connect(DATABASE_FILENAME)
+    ##################kensertion############
+    db.create_function("REGEXP", 2, regexp)
+    ########################################
     c = db.cursor()
     s = prelim_assembly(sample)[0]
     args = prelim_assembly(sample)[1]
-    #print(s, args)
+    print(s, args)
     r = c.execute(s, args)
     result = r.fetchall()
     
