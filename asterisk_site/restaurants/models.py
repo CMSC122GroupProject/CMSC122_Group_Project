@@ -1,6 +1,10 @@
 from django.db import models
 from django.utils import timezone
+#from .googlemaps import geocoding, Client
 import googlemaps
+#from client import places_nearby
+#from.client import Client
+#from .places import places_nearby
 
 class Dine_query(models.Model):
     #name = models.CharField(max_length=64)
@@ -28,8 +32,10 @@ class Dine_query(models.Model):
         gmaps = googlemaps.Client(key='AIzaSyDoV3acX1mSLi3V1FWT__mjIaoq5QdHlg0')
         address = self.current_location
         city = self.current_city
-        geocode_result = gmaps.geocode(",".join(("address", "city")))
-        (self.longitude, self.latitude) = geocode_result
+        input_loc = 'address' + ',' + 'city'
+        geocode_result = gmaps.geocode(input_loc)
+        self.latitude = geocode_result[0]['geometry']['location']['lat']
+        self.longitude = geocode_result[0]['geometry']['location']['lng']
 
         
         '''

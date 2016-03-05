@@ -4,6 +4,7 @@ from .models import Dine_query
 from .forms import DineQueryForm
 from .asterisk_pre_algo import dict_api, desired_output, tables, dict_what, DATABASE_FILENAME
 from .asterisk_pre_algo import query_relations, query_join, query_where, query_select, prelim_assembly, prelim_algorithm, algorithm
+import googlemaps
 
 
 import sqlite3
@@ -22,16 +23,25 @@ def dine_query_list(request):
     print('did it run')
     #results = []
     for query in dining_queries:
-        #assuming of course we just have one query############
+        #assuming of course we just have one query############        
         day = query.day
         #print(day)
         times = day_dict[day]
         #lat = query.latitude
         #ssslon = query.longitude
-        query.get_lon_lat()
+        #query.get_lon_lat()
+        gmaps = googlemaps.Client(key='AIzaSyDoV3acX1mSLi3V1FWT__mjIaoq5QdHlg0')
+        address = query.current_location
+        city = query.current_city
+        input_loc = address,s city
+        geocode_result = gmaps.geocode(input_loc)
+        query.latitude = geocode_result[0]['geometry']['location']['lat']
+        query.longitude = geocode_result[0]['geometry']['location']['lng']
         sample = { 'price': query.price, 'rating': query.desired_rating , times[0] : query.opening_time, times[1] : query.closing_time, 
-                   'lon' : query.longitude, 'lat': query.latitude   ,'preferences' : ['name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
+                   'lon' : query.longitude, 'lat': query.latitude   ,'preferences' : [ 'name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
         algo = algorithm(sample)
+        print(query.current_location, input_loc)
+        print(query.latitude, query.longitude)
 
         #results.append(algo)
     #return results
