@@ -3,18 +3,19 @@ import sqlite3
 from nltk.corpus import wordnet as wn
 
 restaurants = json.load(open('restaurant_data.json'))
+
 db = sqlite3.connect("restaurants.db")
 
 c = db.cursor()
 
 time = "CREATE TABLE time (m_open int, m_closed int, t_open int, t_closed int, "
 time += "w_open int, w_closed int, r_open int, r_closed int, f_open int, f_closed int, "
-time += "sat_open int, sat_closed int, sun_open int, sun_closed int, name_id varchar(30));"
-yelp = "CREATE TABLE yelp (name_id varchar(30), price int, rating float, comments varchar);"
-maps = "CREATE TABLE maps (lon float, lat float, name_id varchar(30));"
+time += "sat_open int, sat_closed int, sun_open int, sun_closed int, name_id varchar(30), id varchar);"
+yelp = "CREATE TABLE yelp (name_id varchar(30), price int, rating float, comments varchar, id varchar);"
+maps = "CREATE TABLE maps (lon float, lat float, name_id varchar(30), id varchar);"
 
 timelist = "(m_open, m_closed, t_open, t_closed , w_open, w_closed, r_open, r_closed, f_open, f_closed, \
-    sat_open, sat_closed, sun_open, sun_closed, name_id)"
+    sat_open, sat_closed, sun_open, sun_closed, name_id, id)"
 
 c.execute(time)
 c.execute(yelp)
@@ -30,8 +31,8 @@ def format_time(time):
     num = time[:-3]
     ap = time[-2:]
     time_parts = num.split(":")
-    new_time = int(time_parts[0] + time_parts[1])
-    if ap == 'am':
+    new_time = int(time_parts[0]) * 100 + int(time_parts[1])
+    if ap == 'am' or int(time_parts[0]) == 12:
         return new_time
     return new_time + 1200
 
@@ -58,9 +59,10 @@ for r in restaurants:
         time_to_append.append(format_time(opening[i]))
         time_to_append.append(format_time(closing[i]))
     time_to_append.append(data['name'])
+    time_to_append.append(r)
     args_time.append(time_to_append)
-    maps_to_append = [data['long'],  data['lat'], data['name']]
-    yelp_to_append = [data['name'], len(data['price_index']), data['score'], cm]
+    maps_to_append = [data['long'],  data['lat'], data['name'], r]
+    yelp_to_append = [data['name'], len(data['price_index']), data['score'], cm, r]
     args_maps.append(maps_to_append)
     args_yelp.append(yelp_to_append)
 
@@ -71,9 +73,9 @@ for i in range(n):
     args_maps[i] = tuple(args_maps[i])
 
 for i in range(n):
-    c.execute("INSERT INTO yelp (name_id, price, rating, comments)  VALUES (?, ?, ?, ?);", args_yelp[i])
-    c.execute("INSERT INTO time" + timelist + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", args_time[i])
-    c.execute("INSERT INTO maps VALUES (?, ?, ?);", args_maps[i])
+    c.execute("INSERT INTO yelp (name_id, price, rating, comments, id)  VALUES (?, ?, ?, ?, ?);", args_yelp[i])
+    c.execute("INSERT INTO time" + timelist + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", args_time[i])
+    c.execute("INSERT INTO maps VALUES (?, ?, ?, ?);", args_maps[i])
 
 db.commit()
 db.close()
