@@ -2,9 +2,11 @@ import sqlite3
 import os
 import re
 DATABASE_FILENAME = '/home/student/CMSC122_Group_Project/asterisk_site/restaurants.db'
-dict_api = {'yelp' : ['name_id', 'price', 'rating'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
+dict_api = {'yelp' : ['name_id', 'price', 'rating', 'comments'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
             'f_closed', 'sat_open', 'sat_closed', 'sun_open', 'sun_closed', 'name_id'], 'maps' : ['lon', 'lat', 'name_id']}
-
+'''
+{'preferences': ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed'], 'lon': -87.5966772, 'price': 1, 'lat': 41.8000353, 'rating': 2, 'm_open': 600, 'm_closed': 2400}
+'''
 #not all of the attributes in our sample input would be included in output-some will be in the where statment etc
 desired_output = ['name_id', 'price', 'rating']
 ORDER_BY = 'ORDER BY yelp.name_id, yelp.price, yelp.rating' 
@@ -31,10 +33,10 @@ dict_what['sat_closed'] = ['time.sat_closed' + '<=' + '?']
 dict_what['sun_open'] = ['time.sun_open' + '>=' + '?']
 dict_what['sun_closed'] = ['time.sun_closed' + '<=' + '?']
 #####################kensertion#################
-dict_what['words'] = ['yelp.comments REGEXP ?']
+dict_what['comments'] = ['yelp.comments REGEXP ?']
 ################################################
-sample = {'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 
-'preferences' : ['distance', 'price', 'rating', 'm_open', 'm_closed' ] }
+sample = {'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 'comments' : 'good',
+'preferences' : ['distance', 'price', 'rating', 'm_open', 'm_closed', 'comments' ] }
 
 #################kensertion#################
 def regexp(expr, item):

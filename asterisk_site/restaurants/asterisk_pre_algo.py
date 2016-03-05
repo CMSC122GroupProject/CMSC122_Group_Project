@@ -22,10 +22,11 @@ import re
 #from Yelp import restaurants.db
 #DATA_DIR = os.path.dirname(__file__)
 #DATABASE_FILENAME = os.path.join(DATA_DIR, 'Yelp/restaurants.db')
-DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
+#DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
+DATABASE_FILENAME = '/home/student/CMSC122_Group_Project/asterisk_site/restaurants.db'
 
 
-dict_api = {'yelp' : ['name_id', 'price', 'rating'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
+dict_api = {'yelp' : ['name_id', 'price', 'rating', 'comments'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
             'f_closed', 'sat_open', 'sat_closed', 'sun_open', 'sun_closed', 'name_id'], 'maps' : ['lon', 'lat', 'name_id']}
 
 #not all of the attributes in our sample input would be included in output-some will be in the where statment etc
@@ -54,13 +55,22 @@ dict_what['sat_open'] = ['time.sat_open' + '>=' + '?']
 dict_what['sat_closed'] = ['?' + '<=' + 'time.sat_closed' + '<=' + '?']
 dict_what['sun_open'] = ['time.sun_open' + '>=' + '?']
 dict_what['sun_closed'] = ['?' + '<=' + 'time.sun_closed' + '<=' + '?']
-#dict_what['name_id'] = ['yelp.name_id'  + '=' + '?']
-
-
+dict_what['comments'] = ['yelp.comments REGEXP ?']
 
 #sample input (needs to be ordered):
-sample = { 'name_id':'KFC','price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 
-'preferences' : ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed' ] }
+sample = { 'name_id':'KFC','price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 'comments' : 'asdfads good',
+'preferences' : ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed', 'comments' ] }
+sample1 = {'preferences': ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed'], 'lon': -87.5966772, 'price': 1, 'lat': 41.8000353, 'rating': 2, 'm_open': 600, 'm_closed': 2400}
+
+def regexp(expr, item):
+    reg = re.compile(expr)
+    return reg.search(item) is not None
+
+def remaker(words):
+    words = words.split()
+    words = ['(' + word + ')' for word in words ]
+    rx = '|'.join(words)
+    return rx
 
 def query_relations(sample):
     relation_list = []
@@ -138,7 +148,7 @@ def query_where(sample):
     return what_list, where_param
 
 def prelim_assembly(sample):
-    SELECT = 'SELECT' + " "  + ",".join(query_select(sample))
+    SELECT = 'SELECT' + " DISTINCT "  + ",".join(query_select(sample))
     FROM = 'FROM' + " " + " JOIN ".join(query_relations(sample))
     on_list = []
     on_list_filter = []
@@ -160,10 +170,11 @@ def prelim_assembly(sample):
 
 def prelim_algorithm(sample):
     db = sqlite3.connect(DATABASE_FILENAME)
+    db.create_function("REGEXP", 2, regexp)
     c = db.cursor()
     s = prelim_assembly(sample)[0]
     args = prelim_assembly(sample)[1]
-    #print(s, args)
+    print(s, args)
     r = c.execute(s, args)
     result = r.fetchall()
     
@@ -171,6 +182,8 @@ def prelim_algorithm(sample):
     return result
 
 def algorithm(sample):
+    if 'comments' in list(sample.keys()):
+        sample['comments'] = remaker(sample['comments'])
     query_return = prelim_algorithm(sample)
     #print('query return:', query_return)
     if len(sample['preferences']) == 0:
