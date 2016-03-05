@@ -138,7 +138,7 @@ def query_where(sample):
     return what_list, where_param
 
 def prelim_assembly(sample):
-    SELECT = 'SELECT' + " "  + ",".join(query_select(sample))
+    SELECT = 'SELECT' + ' DISTINCT ' + ",".join(query_select(sample))
     FROM = 'FROM' + " " + " JOIN ".join(query_relations(sample))
     on_list = []
     on_list_filter = []
