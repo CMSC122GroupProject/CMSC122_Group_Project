@@ -15,6 +15,30 @@ def get_url(zip_code):
 
     return url
 
+def clean_runtime(runtime):
+    runtime = runtime.split()
+    if runtime[0][0] == 'R':
+        return None
+    if len(runtime) < 3:
+        if runtime[1] == 'min.':
+            return int(runtime[0])
+        else:
+            return int(runtime[0]) * 100
+    hours = int(runtime[0])
+    minutes = int(runtime[2])
+    return hours * 100 + minutes
+
+def clean_starttime(start):
+    pm = 1200
+    if start[-2:] == 'am':
+        start = start[:-2]
+        pm = 0
+    start = start.split(":")
+    if int(start[0]) == 12:
+        pm = 0
+    start = int(start[0] + start[1]) + pm
+    return start
+
 def get_movies(url):
 
     '''
@@ -66,6 +90,7 @@ def get_movies(url):
                 run_time = movie.find('span').text
                 left = run_time.rindex('-')
                 run_time = run_time[left + 1:].strip()
+                run_time = clean_runtime(run_time)
 
                 data_dict[name]['movies'][title]['run_time'] = run_time
 
@@ -77,8 +102,10 @@ def get_movies(url):
 
                 times = times.replace(u'\xa0', u' ')
                 times = times.replace('\n', '').replace('\t', '')
-                
-                data_dict[name]['movies'][title]['start_times'] = times.split(' ')
+                times = times.split(' ')
+                times = [clean_starttime(start) for start in times]
+                data_dict[name]['movies'][title]['start_times'] = times
+
 
     return data_dict
 
