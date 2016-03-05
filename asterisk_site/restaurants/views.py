@@ -43,7 +43,7 @@ def dine_query_list(request):
         desired_output.append(times[1])
         algo = prelim_algorithm(sample)
         c = {'dining_query_results': list(algo), 'timing' : [times[0], times[1] ] }
-        print(prelim_assembly(samples))
+        print(prelim_assembly(sample))
         #results.append(algo)
     #return results
     #return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': results })

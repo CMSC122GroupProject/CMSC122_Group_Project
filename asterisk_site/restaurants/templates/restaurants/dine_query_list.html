@@ -38,6 +38,9 @@
                     <th class = "th"> Restaurants </th>
                     <th class = "th"> Price (1-5) </th>
                     <th class = "th"> Rating (1-5) </th>
+                {% for time in timing  %}
+                    <th class = "th"> {{time}} </th>
+                {% endfor %}
                 </tr>
                 {% for result in dining_query_results %}
             
