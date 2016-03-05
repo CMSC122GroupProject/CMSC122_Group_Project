@@ -30,6 +30,7 @@ dict_api = {'yelp' : ['name_id', 'price', 'rating'], 'time' : ['m_open', 'm_clos
 
 #not all of the attributes in our sample input would be included in output-some will be in the where statment etc
 desired_output = ['name_id', 'price', 'rating']
+
 ORDER_BY = 'ORDER BY yelp.name_id, yelp.price, yelp.rating' 
 
 #some tables more important than others-eg yelp table more important than twitter etc
@@ -40,25 +41,25 @@ dict_what = {'price' : ['yelp.price' + '<=' + '?']}
 dict_what['distance'] = ['maps.distance' + '<=' + '?']
 dict_what['rating'] = ['yelp.rating' + '>=' + '?']
 dict_what['m_open'] = ['time.m_open' + '>=' + '?']
-dict_what['m_closed'] = ['time.m_closed' + '<=' + '?']
-dict_what['t_open'] = ['time.m_open' + '>=' + '?']
-dict_what['t_closed'] = ['time.t_closed' + '<=' + '?']
+dict_what['m_closed'] = ['?' + '<=' + 'time.m_closed' + '<=' + '?']
+dict_what['t_open'] = ['time.t_open' + '>=' + '?']
+dict_what['t_closed'] = ['?' + '<=' + 'time.t_closed' + '<=' + '?']
 dict_what['w_open'] = ['time.w_open' + '>=' + '?']
-dict_what['w_closed'] = ['time.w_closed' + '<=' + '?']
+dict_what['w_closed'] = ['?' + '<=' + 'time.w_closed' + '<=' + '?']
 dict_what['r_open'] = ['time.r_open' + '>=' + '?']
-dict_what['r_closed'] = ['time.r_closed' + '<=' + '?']
+dict_what['r_closed'] = ['?' + '<=' + 'time.r_closed' + '<=' + '?']
 dict_what['f_open'] = ['time.f_open' + '>=' + '?']
-dict_what['f_closed'] = ['time.f_closed' + '<=' + '?']
+dict_what['f_closed'] = ['?' + '<=' + 'time.f_closed' + '<=' + '?']
 dict_what['sat_open'] = ['time.sat_open' + '>=' + '?']
-dict_what['sat_closed'] = ['time.sat_closed' + '<=' + '?']
+dict_what['sat_closed'] = ['?' + '<=' + 'time.sat_closed' + '<=' + '?']
 dict_what['sun_open'] = ['time.sun_open' + '>=' + '?']
-dict_what['sun_closed'] = ['time.sun_closed' + '<=' + '?']
+dict_what['sun_closed'] = ['?' + '<=' + 'time.sun_closed' + '<=' + '?']
 #dict_what['name_id'] = ['yelp.name_id'  + '=' + '?']
 
 
 
 #sample input (needs to be ordered):
-sample = {'name_id':'KFC', 'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 
+sample = { 'name_id':'KFC','price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 
 'preferences' : ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed' ] }
 
 def query_relations(sample):
@@ -105,8 +106,8 @@ def query_select(sample):
     select_list = []
     count = []
     samples = list(sample.keys())
-    print('sample:', samples)
-    print('relations:', relations)
+    #print('sample:', samples)
+    #print('relations:', relations)
     #for param in sample:
     for param in desired_output:
         for table in relations:
@@ -129,6 +130,11 @@ def query_where(sample):
             else:
                 what_list.append(dict_what[i])
                 where_param.append(i)
+    time_constraint = where_param[-2]
+    time_last = where_param[-1]
+    where_param.remove(time_last)
+    for i in [time_constraint, time_last]:
+        where_param.append(i)
     return what_list, where_param
 
 def prelim_assembly(sample):
@@ -179,6 +185,8 @@ def algorithm(sample):
         sample['preferences'].remove(least)
         #print('rework')
         return algorithm(sample)
+
+
 
 
 
