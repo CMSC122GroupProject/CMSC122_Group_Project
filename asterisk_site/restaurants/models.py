@@ -1,5 +1,8 @@
 from django.db import models
 from django.utils import timezone
+from datetime import date
+
+my_date = date.today()
 #from .googlemaps import geocoding, Client
 import googlemaps
 #from client import places_nearby
@@ -8,10 +11,11 @@ import googlemaps
 
 class Dine_query(models.Model):
     #name = models.CharField(max_length=64)
-    price = models.IntegerField()
-    desired_rating = models.IntegerField()
-    opening_time = models.IntegerField()
-    closing_time = models.IntegerField()
+    price = models.IntegerField(default = 1)
+    desired_rating = models.IntegerField(default = 2)
+    opening_time = models.IntegerField(default = 600)
+    closing_time = models.IntegerField(default = 2400)
+    
     day = models.CharField(max_length=10)
     distance = models.FloatField()
     current_location = models.CharField(max_length=100)
@@ -22,10 +26,11 @@ class Dine_query(models.Model):
 
 
     def __repr__(self):
-        return '{}: Price: {}, Desired Rating: {}, Opening Time: {}, Closing Time: {}, Distance: {}'.format( self.price, self.desired_rating, self.opening_time, self.closing_time, self.distance)
+        return '{}: Price: {}, Desired Rating: {}, Opening Time: {}, Closing Time: {}, Distance: {}'.format( self.price, self.desired_rating, 
+            self.opening_time, self.closing_time, self.distance)
 
-    def __str__(self):
-        return '{}: Price: {}, Desired Rating: {}, Opening Time: {}, Closing Time: {}, Distance: {}'.format( self.price, self.desired_rating, self.opening_time, self.closing_time, self.distance)
+    #def __str__(self):
+        #return '{}: Price: {}, Desired Rating: {}'.format( self.price, self.desired_rating)
 
         
     def get_lon_lat(self):
