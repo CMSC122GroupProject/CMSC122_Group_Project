@@ -17,12 +17,13 @@
             <li> Please write times on military time </li>
             <li> Please write the day fully (no abbreviations) </li>
         </ul>
+
         <br></br>
 
         <form method="POST" class="post-form">{% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="save btn btn-default">Save</button>
         </form>
-        
+        <h2> <a href="{% url 'dine_query_list' %}">Back To Aster*sk Project Page</a>   </h2>
     </body>
 </html>

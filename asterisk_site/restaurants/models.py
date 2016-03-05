@@ -11,8 +11,9 @@ import googlemaps
 
 class Dine_query(models.Model):
     #name = models.CharField(max_length=64)
-    price = models.IntegerField(default = 1)
-    desired_rating = models.IntegerField(default = 2)
+    '''
+    price = models.IntegerField()
+    desired_rating = models.IntegerField()
     opening_time = models.IntegerField(default = 600)
     closing_time = models.IntegerField(default = 2400)
     
@@ -23,6 +24,23 @@ class Dine_query(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     longitude = None
     latitude = None
+    '''
+    transport_choices = [('driving', 'driving'), ('walking', 'walking'), ('bicycling', 'bicycling'), ('transit', 'transit')]
+    day_choices = [( 'Monday', 'Monday'), ('Tuesday', 'Tuesday'), ('Wednesday', 'Wednesday'), ('Thursday', 'Thursday'), 
+                    ('Friday', 'Friday'), ('Saturday', 'Saturday'), ('Sunday', 'Sunday')]
+    num_choices = [(1,1), (2,2), (3,3), (4,4), (5,5)]
+
+    price = models.IntegerField(choices=num_choices)
+    desired_rating = models.IntegerField(choices=num_choices)
+    opening_time = models.IntegerField()
+    closing_time = models.IntegerField()
+    day = models.CharField(choices=day_choices, max_length =15)
+    current_location = models.CharField(max_length=100)
+    current_city = models.CharField(max_length=20)
+    created_date = models.DateTimeField(default=timezone.now)
+    longitude = None
+    latitude = None
+    transport_by = models.CharField(choices=transport_choices, max_length=15)
 
 
     def __repr__(self):
