@@ -1,8 +1,11 @@
 import bs4
 import requests
 import datetime
+import sys
+sys.path.insert(0, '/home/student/CMSC122_Group_Project/Gmaps')
+import Maps
 
-def get_url(zip_code):
+def get_url_flixster(zip_code):
 
     base_url = 'http://igoogle.flixster.com/igoogle/showtimes?movie=all&date='
 
@@ -15,7 +18,7 @@ def get_url(zip_code):
 
     return url
 
-def get_movies(url):
+def get_movies_flixster(url):
 
     '''
 
@@ -82,4 +85,79 @@ def get_movies(url):
 
     return data_dict
 
+def get_url_fandango(zip_code):
+    '''
+    Example_url = 'http://www.fandango.com/60615_movietimes?date=3/4/2016'
+    '''
 
+    base_url = 'http://www.fandango.com/'
+
+    url_zip = base_url + str(zip_code)
+
+
+    date = datetime.datetime.now()
+    date_url = date.strftime("%m/%d/%Y")
+
+    url = url_zip + '_movietimes?date=' + data
+
+def update_movies_fandango(movie_dict):
+
+    return
+
+def movie_filter(movie_dict):
+
+    return
+
+class movie:
+    def __init__(self, name, start, run_time, theatre, lat, lng):
+        self.name = name
+        self.start = start
+        self.run_time = run_time
+        self.theatre = theatre
+        self.lat = lat  
+        self.lng = lng
+
+def get_movie_objs(data_dict):
+
+    movies = set([])
+
+    for theatre in data_dict.keys():
+        address = data_dict[theatre]['address']
+        (lat,lng) = Maps.get_coordinates(address)
+        for name in data_dict[theatre]['movies'].keys():
+            run_time = data_dict[theatre]['movies'][name]['run_time']
+            for time in data_dict[theatre]['movies'][name]['start_times']:
+                movie_obj = movie(name, time, run_time, theatre, lat, lng)
+                movies.add(movie_obj)
+
+    return movies
+
+def movie_filter(data_objs, user_start, user_end, user_lat, user_lng):
+
+    filtered_movies = set([])
+
+    for movie in data_objs:
+        if movie.start > user_start and  movie.start + movie.run_time < user_end:
+            filtered_movies.add(movie)
+
+    return filtered_movies
+
+class Node:
+    def __init__(self, label):
+        self.label = label
+        self.edges = []
+    def add_edge(self, neighbor, weight):
+        self.edges.append((neighbor, weight))
+
+def dinner_and_movie(restuarants, movies, home):
+
+    graph = set([])
+
+    for movie in movies:
+        
+        for resturarant in restuarants:
+            eat_and_watch.add((resturarant, movie))
+
+
+
+    return
