@@ -8,7 +8,7 @@ class DineQueryForm(forms.ModelForm):
         model = Dine_query
         #fields = ('name', 'price', 'desired_rating', 'opening_time', 'closing_time', 'day', 'distance', 'current_location', 'current_city')
         
-        fields = ( 'price', 'desired_rating', 'opening_time', 'closing_time', 'day', 'current_location', 'current_city', 'transport_by')
+        fields = ( 'price', 'desired_rating', 'opening_time', 'closing_time', 'day', 'terms', 'current_location', 'current_city', 'transport_by')
         #tank = forms.IntegerField(widget=forms.HiddenInput(), initial=123)
     
     '''

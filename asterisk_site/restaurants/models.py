@@ -38,6 +38,7 @@ class Dine_query(models.Model):
     current_location = models.CharField(max_length=100)
     current_city = models.CharField(max_length=20)
     created_date = models.DateTimeField(default=timezone.now)
+    terms = models.CharField(max_length=150)
     longitude = None
     latitude = None
     transport_by = models.CharField(choices=transport_choices, max_length=15)
@@ -55,7 +56,7 @@ class Dine_query(models.Model):
         gmaps = googlemaps.Client(key='AIzaSyDoV3acX1mSLi3V1FWT__mjIaoq5QdHlg0')
         address = self.current_location
         city = self.current_city
-        input_loc = 'address' + ',' + 'city'
+        input_loc = address, city
         geocode_result = gmaps.geocode(input_loc)
         self.latitude = geocode_result[0]['geometry']['location']['lat']
         self.longitude = geocode_result[0]['geometry']['location']['lng']
