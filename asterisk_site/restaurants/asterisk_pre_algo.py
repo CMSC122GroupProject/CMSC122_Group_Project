@@ -22,8 +22,8 @@ import re
 #from Yelp import restaurants.db
 #DATA_DIR = os.path.dirname(__file__)
 #DATABASE_FILENAME = os.path.join(DATA_DIR, 'Yelp/restaurants.db')
-DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
-#DATABASE_FILENAME = '/home/student/CMSC122_Group_Project/asterisk_site/restaurants.db'
+#DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
+DATABASE_FILENAME = '/home/student/CMSC122_Group_Project/asterisk_site/restaurants.db'
 
 
 dict_api = {'yelp' : ['name_id', 'price', 'rating', 'comments'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
@@ -42,19 +42,19 @@ dict_what = {'price' : ['yelp.price' + '<=' + '?']}
 dict_what['distance'] = ['maps.distance' + '<=' + '?']
 dict_what['rating'] = ['yelp.rating' + '>=' + '?']
 dict_what['m_open'] = ['time.m_open' + '>=' + '?']
-dict_what['m_closed'] = ['?' + '<=' + 'time.m_closed' + '<=' + '?']
+dict_what['m_closed'] = ['? <= time.m_closed AND time.m_closed <= ?']
 dict_what['t_open'] = ['time.t_open' + '>=' + '?']
-dict_what['t_closed'] = ['?' + '<=' + 'time.t_closed' + '<=' + '?']
+dict_what['t_closed'] = ['? <= time.t_closed AND time.t_closed <= ?']
 dict_what['w_open'] = ['time.w_open' + '>=' + '?']
-dict_what['w_closed'] = ['?' + '<=' + 'time.w_closed' + '<=' + '?']
+dict_what['w_closed'] = ['? <= time.w_closed AND time.w_closed <= ?']
 dict_what['r_open'] = ['time.r_open' + '>=' + '?']
-dict_what['r_closed'] = ['?' + '<=' + 'time.r_closed' + '<=' + '?']
+dict_what['r_closed'] = ['? <= time.r_closed AND time.r_closed <= ?']
 dict_what['f_open'] = ['time.f_open' + '>=' + '?']
-dict_what['f_closed'] = ['?' + '<=' + 'time.f_closed' + '<=' + '?']
+dict_what['f_closed'] = ['? <= time.f_closed AND time.f_closed <= ?']
 dict_what['sat_open'] = ['time.sat_open' + '>=' + '?']
-dict_what['sat_closed'] = ['?' + '<=' + 'time.sat_closed' + '<=' + '?']
+dict_what['sat_closed'] = ['? <= time.sat_closed AND time.sat_closed <= ?']
 dict_what['sun_open'] = ['time.sun_open' + '>=' + '?']
-dict_what['sun_closed'] = ['?' + '<=' + 'time.sun_closed' + '<=' + '?']
+dict_what['sun_closed'] = ['? <= time.sun_closed AND time.m_closed <= ?']
 dict_what['comments'] = ['yelp.comments REGEXP ?']
 
 #sample input (needs to be ordered):
@@ -125,6 +125,7 @@ def query_select(sample):
             if param in dict_api[table] and param not in count:
                 select_list.append(".".join((table, param)))
                 count.append(param)
+    select_list.append('m_closed')
     return select_list
 
 
@@ -176,7 +177,7 @@ def prelim_algorithm(sample):
     c = db.cursor()
     s = prelim_assembly(sample)[0]
     args = prelim_assembly(sample)[1]
-    print(s, args)
+    #print(s, args)
     r = c.execute(s, args)
     result = r.fetchall()
     
