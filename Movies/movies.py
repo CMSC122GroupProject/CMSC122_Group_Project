@@ -171,6 +171,14 @@ def get_movies_flixster(url):
 
     return data_dict
 
+def get_all_movies(zipcode):
+    fan = get_movies_fandango(get_url_fandango(zipcode))
+    flix = get_movies_flixster(get_url_flixster(zipcode))
+    for k in flix:
+        fan[k] = flix[k]
+    return fan
+
+
 class movie:
     def __init__(self, name, start, run_time, theatre, lat, lng, travel_from_home=0, type = 'movie'):
         self.name = name
