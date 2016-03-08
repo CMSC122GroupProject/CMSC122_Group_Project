@@ -19,6 +19,58 @@ def get_url_flixster(zip_code):
 
     return url
 
+def get_url_fandango(zip_code):
+    base = 'http://www.fandango.com/'
+    end = '_movietimes'
+    return base + str(zip_code) + end
+
+def scrub_runtime(runtime):
+    run = runtime[2:-1]
+    run = run.split('H')
+    run = [int(r) for r in run]
+    return run[0] * 100 + run[1]
+
+def scrub_starttime(starttime):
+    start = starttime.split('T')[1]
+    start = start.split('-')[0]
+    time = start.split(':')
+    hour = time[0]
+    minute = time[1]
+    time = hour + minute
+    return int(time)
+
+def get_movies_fandango(url):
+    data_dict = {}
+    data = requests.get(url)
+    soup = bs4.BeautifulSoup(data.content, "html5lib")
+    theatres = soup.find_all('div', itemtype = 'http://schema.org/MovieTheater')
+    for theatre in theatres:
+        name = theatre.find(itemprop = 'name')['content']
+        data_dict[name] = {}
+        address_info = theatre.find('span', itemprop = 'address')
+        street = address_info.find(itemprop = 'streetAddress' )['content']
+        city = address_info.find(itemprop = 'addressLocality' )['content']
+        zipcode = address_info.find(itemprop = 'postalCode' )['content']
+        state = address_info.find(itemprop = 'addressRegion' )['content']
+        data_dict[name]['address'] = street + ' ' + city + ', ' + state + ' ' + zipcode
+        data_dict[name]['movies'] = {}
+        movies = theatre.find_all('span', itemprop = 'event')
+        if movies:
+            for movie in movies:
+                title = movie.find(itemprop = 'name')['content']
+                runtime = movie.find(itemprop = 'duration')['content']
+                data_dict[name]['movies'][title] = {}
+                runtime = scrub_runtime(runtime)
+                data_dict[name]['movies'][title]['run_time'] = runtime
+
+                start_times = movie.find_all(itemprop = 'startDate')
+                starting = []
+                for start in start_times:
+                    s = scrub_starttime(start['content'])
+                    starting.append(s)
+                data_dict[name]['movies'][title]['start_times'] = starting
+    return data_dict
+
 def clean_runtime(runtime):
     runtime = runtime.split()
     if runtime[0][0] == 'R':
@@ -119,28 +171,13 @@ def get_movies_flixster(url):
 
     return data_dict
 
-def get_url_fandango(zip_code):
-    '''
-    Example_url = 'http://www.fandango.com/60615_movietimes?date=3/4/2016'
-    '''
+def get_all_movies(zipcode):
+    fan = get_movies_fandango(get_url_fandango(zipcode))
+    flix = get_movies_flixster(get_url_flixster(zipcode))
+    for k in flix:
+        fan[k] = flix[k]
+    return fan
 
-    base_url = 'http://www.fandango.com/'
-
-    url_zip = base_url + str(zip_code)
-
-
-    date = datetime.datetime.now()
-    date_url = date.strftime("%m/%d/%Y")
-
-    url = url_zip + '_movietimes?date=' + data
-
-def update_movies_fandango(movie_dict):
-
-    return
-
-def movie_filter(movie_dict):
-
-    return
 
 class movie:
     def __init__(self, name, start, run_time, theatre, lat, lng, travel_from_home=0, type = 'movie'):
