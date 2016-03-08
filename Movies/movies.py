@@ -200,11 +200,11 @@ class restaurant:
         self.opening_time = opening_time
         self.lat = lat
         self.lng = lng
-        self.type = 'restaurant'    
         if closing_time < 500:
             self.closing_time = 2400
         else:
             self.closing_time = closing_time
+        self.type = "restaurant"    
 
 def get_movie_objs(data_dict, home, user_start, user_end, theatre_max = 2):
 
@@ -257,9 +257,10 @@ class Node:
 
 #more for testing purposes
 class Home:
-    def __init__(self,lat,lng):
+    def __init__(self,lat,lng, name='home'):
         self.lat = lat
         self.lng = lng
+        self.name = 'home'
 
 def get_graph(restaurants, movies, home, travel_mode = 'driving'):
 
@@ -282,7 +283,7 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
 
     for restaurant in restaurants:
         eat = Node(restaurant)
-        home.add_edge(show, Maps.haversine(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng))
+        home.add_edge(eat, Maps.haversine(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng))
 
         for node in graph:
             travel = Maps.haversine(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng)
@@ -308,15 +309,97 @@ def filter_data(time, end_time, edges, eating_time = 45):
             arrival = time + node[1]
             end_of_eating = arrival + eating_time
             #check to see you arrive after it's open, end eating before its closed, and end eating before time is up
-            if arrival >= node[0].data.opening_time and end_of_eating < node[0].data.closing_time and end_of_eating < end_time:
+            if arrival > node[0].data.opening_time and end_of_eating < node[0].data.closing_time and end_of_eating < end_time:
                 possible_edges.add((end_of_eating, node))
 
     return possible_edges
 
-def movie_and_dinner_algo(graph, efficiency_start, start_node, start_time, end_time, eating_time = 45):
+def movie_and_dinner_algo(graph, home_node, start_time, end_time, efficiency = 0, eating_time = 45):
+
+    sol_dict = {}
+
+    possible_nodes = filter_data(start_time, end_time, home_node.edges)
+
+    if possible_nodes == set([]):
+        return sol_dict #or something else
+    else:
+        for node in possible_nodes:
+            if node[1][0].data.type == 'movie': 
+                efficiency += node[1][0].data.run_time
+            elif node[1][0].data.type == 'restaurant':
+                efficiency += eating_time
+            if node[1][0].efficiency < efficiency:
+                index = graph.index(node[1][0])
+                graph[index] = node[1][0]
+                sol_dict[node[1][0]] = movie_and_dinner_algo(graph, node[1][0], node[0], end_time, efficiency, eating_time)
+
+        return sol_dict
+
+def get_solutions(sol_dict):
+
+    for jaunt in sol_dict.keys():
+        if sol_dict[jaunt] == {}:
+            print(jaunt.data.name)
+            print('end of travel')
+        else:
+            print(jaunt.data.name)
+            get_solutions(sol_dict[jaunt])
+
+
+
+
+
+
+
+
+
+
+
+'''
+def get_efficiency_dict(graphs):
+    paths = {}
+
+    for node in graph:
+        paths[node] = (0,[])
+
+    return paths
+
+def movie_and_dinner_algo(graph, efficiency_start, start_node, start_time, end_time, paths, eating_time = 45):
     #should start on home
-    print('uh')
-    for node in filter_data(start_time, end_time, start_node.edges, eating_time): #might be some issues for home
+    #dictionary with paths as keys and efficiencies as values
+    #paths = {node:(efficiency,[efficient neighbors])}
+    print(start_node)
+    possible_edges = filter_data(start_time, end_time, start_node.edges, eating_time)
+    if possible_edges == set([]):
+        return paths
+    else:
+        node = possible_edges.pop()
+        efficiency = efficiency_start
+        if node[1][0].data.type == 'movie':
+            efficiency += node[1][0].data.run_time
+        elif node[1][0].data.type == 'restaurant':
+            efficiency += eating_time 
+        if efficiency > paths[node[1]][0]:
+            print(paths[node[1]][0])
+            paths[node[1]][0] = efficiency
+            paths[node[1]][1].append(start_node.data.name) #i think this will work
+            paths.append(movie_and_dinner_algo(graph, efficiency, node[1][0], node[0], end_time, paths, eating_time))
+        else:
+            return paths
+
+
+
+def movie_and_dinner_algo(graph, efficiency_start, start_node, start_time, end_time, edges, eating_time = 45):
+    #should start on home
+    
+    paths = {}
+
+    print(start_node)
+    possible_edges = filter_data(start_time, end_time, start_node.edges, possible_edges, eating_time)
+    if possible_edges == set([]):
+        return graph
+    else:
+        node = possible_edges.pop()
         efficiency = efficiency_start
         if node[1][0].data.type == 'movie':
             efficiency += node[1][0].data.run_time
@@ -325,14 +408,13 @@ def movie_and_dinner_algo(graph, efficiency_start, start_node, start_time, end_t
         if efficiency > node[1][0].efficiency:
             index = graph.index(node[1][0])
             node[1][0].data.efficiency = efficiency
-            node[1][0].data.efficient_neighbor = start_node #i think this will work
-            print(node[1][0].data.efficiency)
+            node[1][0].data.efficient_neighbor = start_node.data.name #i think this will work
             graph[index] = node[1][0]
             for nodie in graph:
                 print(nodie.efficient_neighbor)
-            return movie_and_dinner_algo(graph, efficiency, node[1][0], node[0], end_time, eating_time)
+            return movie_and_dinner_algo(graph, efficiency, node[1][0], node[0], end_time, edges, eating_time)
 
-'''
+
 def movie_and_dinner_algo(graph, home, start_time, end_time, eating_time = 45):
 
     travel_graph = set(graph)
