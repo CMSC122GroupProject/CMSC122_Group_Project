@@ -42,7 +42,7 @@ def format_time(time):
     ap = time[-2:]
     time_parts = num.split(":")
     new_time = int(time_parts[0]) * 100 + int(time_parts[1])
-    if ap == 'am' or int(time_parts[0]) == 12 and ap == 'pm':
+    if ap == 'am' and int(time_parts[0]) != 12 or int(time_parts[0]) == 12 and ap == 'pm':
         return new_time
     return new_time + 1200
 
