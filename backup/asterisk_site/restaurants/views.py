@@ -27,23 +27,27 @@ def dine_query_list(request):
         day = query.day
         #print(day)
         times = day_dict[day]
+        transport_method = query.transport_by
         #lat = query.latitude
         #ssslon = query.longitude
-        #query.get_lon_lat()
-        gmaps = googlemaps.Client(key='AIzaSyDoV3acX1mSLi3V1FWT__mjIaoq5QdHlg0')
-        address = query.current_location
-        city = query.current_city
-        input_loc = address, city
-        geocode_result = gmaps.geocode(input_loc)
-        query.latitude = geocode_result[0]['geometry']['location']['lat']
-        query.longitude = geocode_result[0]['geometry']['location']['lng']
+        query.get_lon_lat()
+        #gmaps = googlemaps.Client(key='AIzaSyDoV3acX1mSLi3V1FWT__mjIaoq5QdHlg0')
+        #address = query.current_location
+        #city = query.current_city
+        #input_loc = address, city
+        #geocode_result = gmaps.geocode(input_loc)
+        #query.latitude = geocode_result[0]['geometry']['location']['lat']
+        #query.longitude = geocode_result[0]['geometry']['location']['lng']
         sample = { 'price': query.price, 'rating': query.desired_rating , times[0] : query.opening_time, times[1] : query.closing_time, 
                    'lon' : query.longitude, 'lat': query.latitude   ,'preferences' : [ 'name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
         desired_output.append(times[0])
         desired_output.append(times[1])
         algo = prelim_algorithm(sample)
-        c = {'dining_query_results': list(algo), 'timing' : [times[0], times[1] ] }
-        print(sample)
+        desired_output.append('lat')
+        desired_output.append('lon')
+        movie_output = prelim_algorithm(sample)
+        c = {'dining_query_results': set(algo), 'timing' : [times[0], times[1] ] }
+        print(movie_output)
         #results.append(algo)
     #return results
     #return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': results })
