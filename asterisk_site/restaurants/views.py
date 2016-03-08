@@ -19,13 +19,14 @@ day_dict = {'Monday': ('m_open', 'm_closed'), 'Tuesday': ('t_open', 't_closed'),
 
 def dine_query_list(request):
     #dining_queries = Dine_query.objects.order_by('created_date')
+    
     dining_queries = Dine_query.objects.order_by('created_date')
     if not dining_queries:
-            return render(request, 'restaurants/dine_query_list.html', {'timing' : ['No Opening Time Given', 'No Closing Time Given']}) 
+        return render(request, 'restaurants/dine_query_list.html', {'headers' : ['  No Query Submitted ']}) 
     else:
         query = dining_queries[0]
-
-
+    
+    #query = Dine_query.objects.order_by('created_date')[0]
     #print('hello')
         print('did it run')
     #results = []
@@ -51,20 +52,22 @@ def dine_query_list(request):
                    'lon' : query.longitude, 'lat': query.latitude   ,'preferences' : [ 'name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
         desired_output.append(times[0])
         desired_output.append(times[1])
-        
+               
         
         algo = prelim_algorithm(sample)
         print(algo)
         desired_output.append('lat')
         desired_output.append('lon')
         movie_output = prelim_algorithm(sample)
-        
+        for i in ['lat', 'lon', times[0], times[1]]:
+            desired_output.remove(i)
         for key in day_dict.keys():
             if (times[0], times[1]) == day_dict[key]:
                 day_table = key
                 break
-        c = {'dining_query_results': list(algo), 
-            'timing' : [day_table + ':' + " " + 'Opening Time', day_table + ':' + " "+'Closing Time' ] }
+    
+        c = {'dining_query_results': list(algo), 'headers' : ['Restaurants', 'Price (1-5) ', 'Rating (1-5) ']
+        ,'timing' : [day_table + ':' + " " + 'Opening Time', day_table + ':' + " "+'Closing Time' ] }
         #print(movie_output)
         #results.append(algo)
     #return results
