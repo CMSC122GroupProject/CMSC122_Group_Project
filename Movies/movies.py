@@ -1,0 +1,352 @@
+import bs4
+import requests
+import datetime
+import sys
+import queue
+sys.path.insert(0, '/home/student/CMSC122_Group_Project/Gmaps')
+import Maps
+
+def get_url_flixster(zip_code):
+
+    base_url = 'http://igoogle.flixster.com/igoogle/showtimes?movie=all&date='
+
+    date = datetime.datetime.now()
+    date_url = date.strftime("%Y%m%d")
+
+    zip_url = '&postal='+str(zip_code)+'&submit=Go'
+
+    url = base_url + date_url + zip_url
+
+    return url
+
+def clean_runtime(runtime):
+    runtime = runtime.split()
+    if runtime[0][0] == 'R':
+        return None
+    if len(runtime) < 3:
+        if runtime[1] == 'min.':
+            return int(runtime[0])
+        else:
+            return int(runtime[0]) * 100
+    hours = int(runtime[0])
+    minutes = int(runtime[2])
+    return hours * 100 + minutes
+
+def clean_starttime(start):
+    
+    pm = 1200
+    if start[-2:] == 'am':
+        start = start[:-2]
+        pm = 0
+    start = start.split(":")
+    
+    if int(start[0]) == 12:
+        pm = 0
+    if len(start) < 2:
+        return start
+
+    start = int(start[0] + start[1]) + pm
+    return start
+
+def get_movies_flixster(url):
+
+    '''
+
+    #Example usage of site
+    Example_url = 'http://igoogle.flixster.com/igoogle/showtimes?movie=all&date=20160303&postal=21228&submit=Go'
+
+    Ex_dict = {Theatre_name:{address:'', movies:{A:[time_1, time_2, time_3], B:[...]}}}
+    '''
+
+    data_dict = {}
+
+    data = requests.get(url)
+    soup = bs4.BeautifulSoup(data.content, "html5lib")
+
+    theatres = soup.find_all('div', class_ ='theater clearfix')
+
+    for theatre in theatres:
+
+        name = theatre.find('a').text
+
+        data_dict[name] = {}
+
+        address = theatre.find('h2').find('span').text
+        
+        left = address.index('-') + 1
+        address = address[left:]
+
+        right = address.index('-')
+
+        address = address[:right].strip()
+
+        data_dict[name]['address'] = address
+
+        data_dict[name]['movies'] = {}
+        if theatre.find('div', class_= 'showtimes clearfix'):
+            for movie in theatre.find('div', class_= 'showtimes clearfix').find_all('div', class_='showtime'):
+                if movie.find('span'):            
+                    title = movie.find('h3').text.strip()
+                    
+                    try:
+                        right = title.index('\n')
+                    except ValueError:
+                        right = None
+                    title = title[:right]
+
+                    data_dict[name]['movies'][title] = {}
+
+                    run_time = movie.find('span').text
+                    left = run_time.rindex('-')
+                    run_time = run_time[left + 1:].strip()
+                    run_time = clean_runtime(run_time)
+
+                    data_dict[name]['movies'][title]['run_time'] = run_time
+
+                    times = movie.text.strip() + '\xa0'
+
+                    left = times.index(':', times.index('\n'))
+                    right = times.rindex('\xa0')
+                    times = times[left -1 :right]
+
+                    times = times.replace(u'\xa0', u' ')
+                    times = times.replace('\n', '').replace('\t', '')
+                    times = times.split(' ') #might be an issue
+                    
+                    times = [clean_starttime(start) for start in times]
+                    
+                    data_dict[name]['movies'][title]['start_times'] = times
+
+    return data_dict
+
+def get_url_fandango(zip_code):
+    '''
+    Example_url = 'http://www.fandango.com/60615_movietimes?date=3/4/2016'
+    '''
+
+    base_url = 'http://www.fandango.com/'
+
+    url_zip = base_url + str(zip_code)
+
+
+    date = datetime.datetime.now()
+    date_url = date.strftime("%m/%d/%Y")
+
+    url = url_zip + '_movietimes?date=' + data
+
+def update_movies_fandango(movie_dict):
+
+    return
+
+def movie_filter(movie_dict):
+
+    return
+
+class movie:
+    def __init__(self, name, start, run_time, theatre, lat, lng, travel_from_home=0, type = 'movie'):
+        self.name = name
+        self.start = start
+        self.run_time = run_time
+        self.theatre = theatre
+        self.lat = lat  
+        self.lng = lng
+        self.travel_from_home = 0
+        self.type = 'movie' #might not need this
+
+class restuarant:
+    def __init__(self, name, price, rating, opening_time, closing_time, lat, lng, type = 'restuarant'):
+        #self.unique_id = Restaurant_id
+        #Restaurant_id += 1
+        self.name = name
+        self.price = price
+        self.rating = rating
+        self.opening_time = opening_time
+        self.closing_time = closing_time
+        self.lat = lat
+        self.lng = lng
+        self.type = 'restuarant'    
+
+def get_movie_objs(data_dict, home, user_start, user_end, theatre_max = 2):
+
+    movies = set([])
+
+    theatre_count = 0
+
+    for theatre in data_dict.keys():
+        if theatre_count < theatre_max:
+            theatre_count += 1
+            address = data_dict[theatre]['address']
+            (lat,lng) = Maps.get_coordinates(address)
+            travel_time = Maps.haversine(home.lat, home.lng,lat, lng)
+            if user_start + travel_time < user_end:
+                for name in data_dict[theatre]['movies'].keys():
+                    run_time = data_dict[theatre]['movies'][name]['run_time']
+                    for time in data_dict[theatre]['movies'][name]['start_times']:
+                        #print(theatre, name, time, run_time)
+                        if run_time != None:
+                            if time > user_start and  time + run_time < user_end:
+                                movie_obj = movie(name, time, run_time, theatre, lat, lng, travel_time)
+                                movies.add(movie_obj)
+
+    return movies
+
+def get_restuarant_objs(restuarants):
+
+    rest_objs = set([])
+
+    for rest in restuarants:
+        name = rest[0]
+        price = rest[1]
+        rating = rest[2]
+        opening_time = rest[3]
+        closing_time = rest[4]
+        lat = rest[5]
+        lng = rest[6]
+        new_rest = restuarant(name, price, rating, opening_time, closing_time, lat, lng)
+        rest_objs.add(new_rest)
+
+    return rest_objs
+
+class Node:
+    def __init__(self, data, efficiency = 0, efficient_neighbor = None):
+        self.data = data
+        self.edges = []
+        self.efficiency = 0
+        self.efficient_neighbor = None
+    def add_edge(self, neighbor, weight):
+        self.edges.append((neighbor, weight))
+
+#more for testing purposes
+class Home:
+    def __init__(self,lat,lng):
+        self.lat = lat
+        self.lng = lng
+
+def get_graph(restuarants, movies, home, travel_mode = 'driving'):
+
+    graph = set([])
+
+    home = Node(home)
+    
+    #weight originally just set to the time of travel
+    for movie in movies:
+        print(movie)
+        show = Node(movie)
+        home.add_edge(show, show.data.travel_from_home)
+        
+        for node in graph:
+            travel = Maps.haversine(node.data.lat, node.data.lng, movie.lat, movie.lng)
+            node.add_edge(movie,travel)
+            show.add_edge(node, travel)
+
+        graph.add(show)
+
+    for resturarant in restuarants:
+        print(resturarant)
+        eat = Node(resturarant)
+        home.add_edge(show, Maps.haversine(home.data.lat, home.data.lng, resturarant.lat, resturarant.lng))
+
+        for node in graph:
+            travel = Maps.haversine(node.data.lat, node.data.lng, resturarant.lat, resturarant.lng)
+            node.add_edge(resturarant,travel)
+            eat.add_edge(node, travel)
+
+        graph.add(eat)
+
+    return (home,graph)
+
+def filter_data(time, end_time, edges, eating_time = 45):
+
+    possible_edges = set([])
+
+    for node in edges:
+        if node.type == 'movie':
+            #can you make it to see the start and can you make it to see the end?
+            arrival = time + node[1]
+            end_of_movie = node[0].data.start + node[0].data.run_time
+            if arrival <= node[0].data.start and end_of_movie < end_time:    
+                possible_edges.add((end_of_movie,node))
+        if node[0].data.type == 'restuarant':
+            arrival = time + node[1]
+            end_of_eating = arrival + eating_time
+            #check to see you arrive after it's open, end eating before its closed, and end eating before time is up
+            if arrival >= node[0].data.opening_time and end_of_eating < node[0].data.closing_time and end_of_eating < end_time:
+                possible_edges.add((end_of_eating, node))
+
+    return possible_edges
+
+def movie_and_dinner_algo(graph, efficiency_start, start_node, start_time, end_time, eating_time = 45):
+    #should start on home
+    for node in filter_data(start_time, end_time, start_node.edges, eating_time): #might be some issues for home
+        print(node)
+        efficiency = efficiency_start
+        if node[1][0].data.type == 'movie':
+            efficiency += node[1][0].data.run_time
+        if node[1][0].data.type == 'resturarant':
+            efficiency += eating_time 
+        if efficiency > node[1][0].efficiency:
+            node[1][0].data.efficient_neighbor = start_node #i think this will work
+            print(node[1][0])
+            return movie_and_dinner_algo(graph, efficiency, node[1][0], node[0], end_time, eating_time)
+
+'''
+def movie_and_dinner_algo(graph, home, start_time, end_time, eating_time = 45):
+
+    travel_graph = set(graph)
+    visited = {home:0}
+    solution_path = {}
+    #filter for possible moves
+    possible_firsts = filter_data(home.edges)
+    
+    block_time = end_time - start_time
+    for node in possible_firsts:
+        travel_queue.put((block_time, node))
+
+    time = start_time
+
+    while travel_graph != []:
+        shortest_path = None
+        possible_edges = filter_data(time, loc.edges)
+        for dest in possible_edges:
+            if dest in visited:
+                if shortest_path == None:
+                    shortest_path = dest
+                elif visited[dest] < visited[shortest_path]:
+                    shortest_path = dest
+
+        if shortest_path == None:
+            break
+
+        travel_graph.remove(shortest_path)
+        current_weight = visited[shortest_path]
+
+        if shortest_path.type == 'movie':
+            time = time + shortest_path.run_time
+
+        time = time + shortest_path
+
+        possible_next = filter_data(time, shortest_path.edges)
+        for edge in possible_next: #probably wrong . form
+
+
+            new_path = loc[0] + dest[1]
+            if dest in visited.keys():
+                if new_path <= visited[dest]:
+                    pass
+
+    return possible_list
+
+
+def dijsktra(graph, initial):
+
+    nodes.remove(min_node)
+    current_weight = visited[min_node]
+
+    for edge in graph.edges[min_node]:
+      weight = current_weight + graph.distance[(min_node, edge)]
+      if edge not in visited or weight < visited[edge]:
+        visited[edge] = weight
+        path[edge] = min_node
+
+  return visited, path
+  '''
