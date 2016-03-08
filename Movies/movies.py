@@ -153,18 +153,21 @@ class movie:
         self.travel_from_home = 0
         self.type = 'movie' #might not need this
 
-class restuarant:
-    def __init__(self, name, price, rating, opening_time, closing_time, lat, lng, type = 'restuarant'):
+class restaurant:
+    def __init__(self, name, price, rating, opening_time, closing_time, lat, lng, type = 'restaurant'):
         #self.unique_id = Restaurant_id
         #Restaurant_id += 1
         self.name = name
         self.price = price
         self.rating = rating
         self.opening_time = opening_time
-        self.closing_time = closing_time
         self.lat = lat
         self.lng = lng
-        self.type = 'restuarant'    
+        self.type = 'restaurant'    
+        if closing_time < 500:
+            self.closing_time = 2400
+        else:
+            self.closing_time = closing_time
 
 def get_movie_objs(data_dict, home, user_start, user_end, theatre_max = 2):
 
@@ -182,7 +185,6 @@ def get_movie_objs(data_dict, home, user_start, user_end, theatre_max = 2):
                 for name in data_dict[theatre]['movies'].keys():
                     run_time = data_dict[theatre]['movies'][name]['run_time']
                     for time in data_dict[theatre]['movies'][name]['start_times']:
-                        #print(theatre, name, time, run_time)
                         if run_time != None:
                             if time > user_start and  time + run_time < user_end:
                                 movie_obj = movie(name, time, run_time, theatre, lat, lng, travel_time)
@@ -190,11 +192,11 @@ def get_movie_objs(data_dict, home, user_start, user_end, theatre_max = 2):
 
     return movies
 
-def get_restuarant_objs(restuarants):
+def get_restaurant_objs(restaurants):
 
     rest_objs = set([])
 
-    for rest in restuarants:
+    for rest in restaurants:
         name = rest[0]
         price = rest[1]
         rating = rest[2]
@@ -202,7 +204,7 @@ def get_restuarant_objs(restuarants):
         closing_time = rest[4]
         lat = rest[5]
         lng = rest[6]
-        new_rest = restuarant(name, price, rating, opening_time, closing_time, lat, lng)
+        new_rest = restaurant(name, price, rating, opening_time, closing_time, lat, lng)
         rest_objs.add(new_rest)
 
     return rest_objs
@@ -222,36 +224,35 @@ class Home:
         self.lat = lat
         self.lng = lng
 
-def get_graph(restuarants, movies, home, travel_mode = 'driving'):
+def get_graph(restaurants, movies, home, travel_mode = 'driving'):
 
-    graph = set([])
+    graph = []
 
     home = Node(home)
     
     #weight originally just set to the time of travel
     for movie in movies:
-        print(movie)
         show = Node(movie)
-        home.add_edge(show, show.data.travel_from_home)
+        home.add_edge(show, show.data.travel_from_home) #did we do this?
         
         for node in graph:
+            #move to movie?
             travel = Maps.haversine(node.data.lat, node.data.lng, movie.lat, movie.lng)
-            node.add_edge(movie,travel)
+            node.add_edge(show,travel)
             show.add_edge(node, travel)
 
-        graph.add(show)
+        graph.append(show)
 
-    for resturarant in restuarants:
-        print(resturarant)
-        eat = Node(resturarant)
-        home.add_edge(show, Maps.haversine(home.data.lat, home.data.lng, resturarant.lat, resturarant.lng))
+    for restaurant in restaurants:
+        eat = Node(restaurant)
+        home.add_edge(show, Maps.haversine(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng))
 
         for node in graph:
-            travel = Maps.haversine(node.data.lat, node.data.lng, resturarant.lat, resturarant.lng)
-            node.add_edge(resturarant,travel)
+            travel = Maps.haversine(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng)
+            node.add_edge(eat,travel)
             eat.add_edge(node, travel)
 
-        graph.add(eat)
+        graph.append(eat)
 
     return (home,graph)
 
@@ -260,13 +261,13 @@ def filter_data(time, end_time, edges, eating_time = 45):
     possible_edges = set([])
 
     for node in edges:
-        if node.type == 'movie':
+        if node[0].data.type == 'movie':
             #can you make it to see the start and can you make it to see the end?
             arrival = time + node[1]
             end_of_movie = node[0].data.start + node[0].data.run_time
             if arrival <= node[0].data.start and end_of_movie < end_time:    
                 possible_edges.add((end_of_movie,node))
-        if node[0].data.type == 'restuarant':
+        elif node[0].data.type == 'restaurant':
             arrival = time + node[1]
             end_of_eating = arrival + eating_time
             #check to see you arrive after it's open, end eating before its closed, and end eating before time is up
@@ -277,16 +278,21 @@ def filter_data(time, end_time, edges, eating_time = 45):
 
 def movie_and_dinner_algo(graph, efficiency_start, start_node, start_time, end_time, eating_time = 45):
     #should start on home
+    print('uh')
     for node in filter_data(start_time, end_time, start_node.edges, eating_time): #might be some issues for home
-        print(node)
         efficiency = efficiency_start
         if node[1][0].data.type == 'movie':
             efficiency += node[1][0].data.run_time
-        if node[1][0].data.type == 'resturarant':
+        elif node[1][0].data.type == 'restaurant':
             efficiency += eating_time 
         if efficiency > node[1][0].efficiency:
+            index = graph.index(node[1][0])
+            node[1][0].data.efficiency = efficiency
             node[1][0].data.efficient_neighbor = start_node #i think this will work
-            print(node[1][0])
+            print(node[1][0].data.efficiency)
+            graph[index] = node[1][0]
+            for nodie in graph:
+                print(nodie.efficient_neighbor)
             return movie_and_dinner_algo(graph, efficiency, node[1][0], node[0], end_time, eating_time)
 
 '''
