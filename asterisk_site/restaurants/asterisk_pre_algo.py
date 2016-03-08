@@ -125,7 +125,6 @@ def query_select(sample):
             if param in dict_api[table] and param not in count:
                 select_list.append(".".join((table, param)))
                 count.append(param)
-    select_list.append('m_closed')
     return select_list
 
 
