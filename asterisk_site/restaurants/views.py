@@ -5,6 +5,7 @@ from .forms import DineQueryForm
 from .asterisk_pre_algo import dict_api, desired_output, tables, dict_what, DATABASE_FILENAME
 from .asterisk_pre_algo import query_relations, query_join, query_where, query_select, prelim_assembly, prelim_algorithm, algorithm
 import googlemaps
+from .movies import go
 
 
 import sqlite3
@@ -16,6 +17,15 @@ import re
 day_dict = {'Monday': ('m_open', 'm_closed'), 'Tuesday': ('t_open', 't_closed'), 'Wednesday': ('w_open', 'w_closed'), 'Thursday': ('r_open', 'r_closed'),
                 'Friday' : ('f_open', 'f_closed'), 'Saturday' : ('sat_open', 'sat_closed'), 'Sunday' : ('sun_open', 'sun_closed')}
 
+def process_query(request, query):
+    day = query.day
+    times = day_dict[day]
+    transport_method = query.transport_by
+    query.get_lon_lat()
+    sample = { 'price': query.price, 'rating': query.desired_rating , times[0] : query.opening_time, times[1] : query.closing_time, 
+                   'lon' : query.longitude, 'lat': query.latitude   ,'preferences' : [ 'name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
+    return sample, times
+
 
 def dine_query_list(request):
     #dining_queries = Dine_query.objects.order_by('created_date')
@@ -25,22 +35,22 @@ def dine_query_list(request):
         return render(request, 'restaurants/dine_query_list.html', {'headers' : ['  No Query Submitted ']}) 
     else:
         query = dining_queries[0]
-    
+        print('did it run')
     #query = Dine_query.objects.order_by('created_date')[0]
     #print('hello')
-        print('did it run')
+        ###print('did it run')
     #results = []
     
     #for query in dining_queries:
         
     #assuming of course we just have one query############        
-        day = query.day
+        ###day = query.day
     #print(day)
-        times = day_dict[day]
-        transport_method = query.transport_by
+        ###times = day_dict[day]
+        ###transport_method = query.transport_by
         #lat = query.latitude
         #ssslon = query.longitude
-        query.get_lon_lat()
+        ###query.get_lon_lat()
         #gmaps = googlemaps.Client(key='AIzaSyDoV3acX1mSLi3V1FWT__mjIaoq5QdHlg0')
         #address = query.current_location
         #city = query.current_city
@@ -48,19 +58,26 @@ def dine_query_list(request):
         #geocode_result = gmaps.geocode(input_loc)
         #query.latitude = geocode_result[0]['geometry']['location']['lat']
         #query.longitude = geocode_result[0]['geometry']['location']['lng']
-        sample = { 'price': query.price, 'rating': query.desired_rating , times[0] : query.opening_time, times[1] : query.closing_time, 
-                   'lon' : query.longitude, 'lat': query.latitude   ,'preferences' : [ 'name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
+        ###sample = { 'price': query.price, 'rating': query.desired_rating , times[0] : query.opening_time, times[1] : query.closing_time, 
+                   ###'lon' : query.longitude, 'lat': query.latitude   ,'preferences' : [ 'name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
+        sample, times = process_query(request, query)
         desired_output.append(times[0])
         desired_output.append(times[1])
                
         
         algo = prelim_algorithm(sample)
-        print(algo)
-        desired_output.append('lat')
-        desired_output.append('lon')
-        movie_output = prelim_algorithm(sample)
-        for i in ['lat', 'lon', times[0], times[1]]:
+        ###print(algo)
+        ###desired_output.append('lat')
+        ###desired_output.append('lon')
+        ###movie_output = prelim_algorithm(sample)
+        ###for i in ['lat', 'lon', times[0], times[1]]:
+            ###desired_output.remove(i)
+        
+        #not in original#
+        for i in [times[0], times[1]]:
             desired_output.remove(i)
+        #not in orginal#
+        
         for key in day_dict.keys():
             if (times[0], times[1]) == day_dict[key]:
                 day_table = key
@@ -73,10 +90,35 @@ def dine_query_list(request):
     #return results
     #return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': results })
 
-        return render(request, 'restaurants/dine_query_list.html', c) 
+        return render(request, 'restaurants/dine_query_list.html', c)
 
 def movies_query_list(request):
-    return render(request, 'restaurants/movies_query_list.html')
+    dining_queries = Dine_query.objects.order_by('created_date')
+    if not dining_queries:
+        return render(request, 'restaurants/movies_query_list.html', {'headers' : ['  No Query Submitted ']}) 
+    else:
+        query = dining_queries[0]
+        sample, times = process_query(request, query)
+        desired_output.append(times[0])
+        desired_output.append(times[1])
+        desired_output.append('lat')
+        desired_output.append('lon')
+        movie_output = prelim_algorithm(sample)
+        for i in [times[0], times[1],'lat', 'lon']:
+            desired_output.remove(i)
+
+        for key in day_dict.keys():
+            if (times[0], times[1]) == day_dict[key]:
+                day_table = key
+                break
+
+        print(sample)
+        brandon = go(movie_output, query.opening_time, query.closing_time, query.transport_by, query.latitude, query.longitude, 60615)
+        print(brandon)
+        c = {'dining_query_results': list(movie_output), 'headers' : ['Restaurants', 'Price (1-5) ', 'Rating (1-5) ']
+        ,'timing' : [day_table + ':' + " " + 'Opening Time', day_table + ':' + " "+'Closing Time' ] }
+
+        return render(request, 'restaurants/movies_query_list.html', c)
 
 def main_page(request):
     return render(request, 'restaurants/home_page.html')
