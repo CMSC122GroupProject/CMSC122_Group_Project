@@ -3,7 +3,6 @@ import requests
 import datetime
 import sys
 import queue
-#sys.path.insert(0, '/home/student/CMSC122_Group_Project/Gmaps')
 from .Maps import hsine, get_coordinates, travel_time
 
 def get_url_flixster(zip_code):
@@ -39,36 +38,41 @@ def scrub_starttime(starttime):
     time = hour + minute
     return int(time)
 
-def get_movies_fandango(url):
+def get_movies_fandango(url, theatre_max = 3):
+    
+    theatre_count = 1
     data_dict = {}
     data = requests.get(url)
     soup = bs4.BeautifulSoup(data.content, "html5lib")
     theatres = soup.find_all('div', itemtype = 'http://schema.org/MovieTheater')
     for theatre in theatres:
-        name = theatre.find(itemprop = 'name')['content']
-        data_dict[name] = {}
-        address_info = theatre.find('span', itemprop = 'address')
-        street = address_info.find(itemprop = 'streetAddress' )['content']
-        city = address_info.find(itemprop = 'addressLocality' )['content']
-        zipcode = address_info.find(itemprop = 'postalCode' )['content']
-        state = address_info.find(itemprop = 'addressRegion' )['content']
-        data_dict[name]['address'] = street + ' ' + city + ', ' + state + ' ' + zipcode
-        data_dict[name]['movies'] = {}
-        movies = theatre.find_all('span', itemprop = 'event')
-        if movies:
-            for movie in movies:
-                title = movie.find(itemprop = 'name')['content']
-                runtime = movie.find(itemprop = 'duration')['content']
-                data_dict[name]['movies'][title] = {}
-                runtime = scrub_runtime(runtime)
-                data_dict[name]['movies'][title]['run_time'] = runtime
+        if theatre_count <= theatre_max:
+            name = theatre.find(itemprop = 'name')['content']
+            data_dict[name] = {}
+            address_info = theatre.find('span', itemprop = 'address')
+            street = address_info.find(itemprop = 'streetAddress' )['content']
+            city = address_info.find(itemprop = 'addressLocality' )['content']
+            zipcode = address_info.find(itemprop = 'postalCode' )['content']
+            state = address_info.find(itemprop = 'addressRegion' )['content']
+            data_dict[name]['address'] = street + ' ' + city + ', ' + state + ' ' + zipcode
+            data_dict[name]['movies'] = {}
+            movies = theatre.find_all('span', itemprop = 'event')
+            if movies:
+                for movie in movies:
+                    title = movie.find(itemprop = 'name')['content']
+                    runtime = movie.find(itemprop = 'duration')['content']
+                    data_dict[name]['movies'][title] = {}
+                    runtime = scrub_runtime(runtime)
+                    data_dict[name]['movies'][title]['run_time'] = runtime
 
-                start_times = movie.find_all(itemprop = 'startDate')
-                starting = []
-                for start in start_times:
-                    s = scrub_starttime(start['content'])
-                    starting.append(s)
-                data_dict[name]['movies'][title]['start_times'] = starting
+                    start_times = movie.find_all(itemprop = 'startDate')
+                    starting = []
+                    for start in start_times:
+                        s = scrub_starttime(start['content'])
+                        starting.append(s)
+                    data_dict[name]['movies'][title]['start_times'] = starting
+            theatre_count += 1
+
     return data_dict
 
 def clean_runtime(runtime):
@@ -100,7 +104,7 @@ def clean_starttime(start):
     start = int(start[0] + start[1]) + pm
     return start
 
-def get_movies_flixster(url):
+def get_movies_flixster(url, theatre_max = 3):
 
     '''
 
@@ -116,58 +120,59 @@ def get_movies_flixster(url):
     soup = bs4.BeautifulSoup(data.content, "html5lib")
 
     theatres = soup.find_all('div', class_ ='theater clearfix')
-
+    theatre_count = 1
     for theatre in theatres:
+        if theatre_count <= theatre_max:
+            name = theatre.find('a').text
 
-        name = theatre.find('a').text
+            data_dict[name] = {}
 
-        data_dict[name] = {}
+            address = theatre.find('h2').find('span').text
+            
+            left = address.index('-') + 1
+            address = address[left:]
 
-        address = theatre.find('h2').find('span').text
-        
-        left = address.index('-') + 1
-        address = address[left:]
+            right = address.index('-')
 
-        right = address.index('-')
+            address = address[:right].strip()
 
-        address = address[:right].strip()
+            data_dict[name]['address'] = address
 
-        data_dict[name]['address'] = address
+            data_dict[name]['movies'] = {}
+            if theatre.find('div', class_= 'showtimes clearfix'):
+                for movie in theatre.find('div', class_= 'showtimes clearfix').find_all('div', class_='showtime'):
+                    if movie.find('span'):            
+                        title = movie.find('h3').text.strip()
+                        
+                        try:
+                            right = title.index('\n')
+                        except ValueError:
+                            right = None
+                        title = title[:right]
 
-        data_dict[name]['movies'] = {}
-        if theatre.find('div', class_= 'showtimes clearfix'):
-            for movie in theatre.find('div', class_= 'showtimes clearfix').find_all('div', class_='showtime'):
-                if movie.find('span'):            
-                    title = movie.find('h3').text.strip()
-                    
-                    try:
-                        right = title.index('\n')
-                    except ValueError:
-                        right = None
-                    title = title[:right]
+                        data_dict[name]['movies'][title] = {}
 
-                    data_dict[name]['movies'][title] = {}
+                        run_time = movie.find('span').text
+                        left = run_time.rindex('-')
+                        run_time = run_time[left + 1:].strip()
+                        run_time = clean_runtime(run_time)
 
-                    run_time = movie.find('span').text
-                    left = run_time.rindex('-')
-                    run_time = run_time[left + 1:].strip()
-                    run_time = clean_runtime(run_time)
+                        data_dict[name]['movies'][title]['run_time'] = run_time
 
-                    data_dict[name]['movies'][title]['run_time'] = run_time
+                        times = movie.text.strip() + '\xa0'
 
-                    times = movie.text.strip() + '\xa0'
+                        left = times.index(':', times.index('\n'))
+                        right = times.rindex('\xa0')
+                        times = times[left -1 :right]
 
-                    left = times.index(':', times.index('\n'))
-                    right = times.rindex('\xa0')
-                    times = times[left -1 :right]
-
-                    times = times.replace(u'\xa0', u' ')
-                    times = times.replace('\n', '').replace('\t', '')
-                    times = times.split(' ') #might be an issue
-                    
-                    times = [clean_starttime(start) for start in times]
-                    
-                    data_dict[name]['movies'][title]['start_times'] = times
+                        times = times.replace(u'\xa0', u' ')
+                        times = times.replace('\n', '').replace('\t', '')
+                        times = times.split(' ') #might be an issue
+                        
+                        times = [clean_starttime(start) for start in times]
+                        
+                        data_dict[name]['movies'][title]['start_times'] = times
+            theatre_count += 1
 
     return data_dict
 
@@ -192,8 +197,10 @@ class movie:
         self.theatre = theatre
         self.lat = lat  
         self.lng = lng
-        self.travel_from_home = 0
+        self.travel_from_home = travel_from_home
         self.type = 'movie' #might not need this
+    #def update_travel_from_home(self, distance):
+     #   self.travel_from_home = distance
 
 class restaurant:
     def __init__(self, name, price, rating, opening_time, closing_time, lat, lng, type = 'restaurant'):
@@ -222,7 +229,6 @@ def get_movie_objs(data_dict, home, user_start, user_end, travel_mode = 'driving
          #   theatre_count += 1
         address = data_dict[theatre]['address']
         (lat,lng) = get_coordinates(address)
-
         travel_time = hsine(home.lat, home.lng,lat, lng, travel_mode)
         if user_start + travel_time < user_end:
             for name in data_dict[theatre]['movies'].keys():
@@ -256,8 +262,8 @@ class Node:
     def __init__(self, data, efficiency = 0, efficient_neighbor = None):
         self.data = data
         self.edges = []
-        self.efficiency = 0
-        self.efficient_neighbor = None
+        self.efficiency = efficiency
+        self.efficient_neighbor = efficient_neighbor
     def add_edge(self, neighbor, weight):
         self.edges.append((neighbor, weight))
 
@@ -274,9 +280,10 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
         
         for node in graph:
             #move to movie?
-            travel = hsine(node.data.lat, node.data.lng, movie.lat, movie.lng, travel_mode)
-            node.add_edge(show,travel)
-            show.add_edge(node, travel)
+            if node.data.type != 'movie':
+                travel = hsine(node.data.lat, node.data.lng, movie.lat, movie.lng, travel_mode)
+                node.add_edge(show,travel)
+                show.add_edge(node, travel)
 
         graph.append(show)
 
@@ -285,9 +292,10 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
         home.add_edge(eat, hsine(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng, travel_mode))
 
         for node in graph:
-            travel = hsine(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng, travel_mode)
-            node.add_edge(eat,travel)
-            eat.add_edge(node, travel)
+            if node.data.type != 'restaurant':
+                travel = hsine(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng, travel_mode)
+                node.add_edge(eat,travel)
+                eat.add_edge(node, travel)
 
         graph.append(eat)
 
@@ -330,33 +338,22 @@ def movie_and_dinner_algo(graph, home_node, start_time, end_time, efficiency = 0
             if node[1][0].efficiency < efficiency:
                 index = graph.index(node[1][0])
                 graph[index] = node[1][0]
-                sol_dict[node[1][0]] = (start_time, movie_and_dinner_algo(graph, node[1][0], node[0], end_time, efficiency, eating_time), node[0])
+                sol_dict[node[1][0]] = movie_and_dinner_algo(graph, node[1][0], node[0], end_time, efficiency, eating_time)
 
         return sol_dict
 
-def get_solutions(sol_dict, i = 1, current_path = []):
+def get_solutions(sol_dict, output_4_adam = []):
 
-    output_4_adam = {}
-
-    for node in sol_dict.keys():
-        if sol_dict[node] == {}:
+    if sol_dict == {}:
+        output_4_adam.append('FLAG')
+    else:
+        for node in sol_dict.keys():
             if node.data.type == 'movie':
-                current_path.append((node[1].data.type, node[1].data.name, node[1].data.start, node[1].data.run_time, node[1].data.theatre,node[1].data.lat,node[1].data.lng))
-                current_path.append('FLAG')
-                output_4_adam[i] = current_path
+                new_tup = (node.data.type, node.data.name, node.data.start, node.data.run_time, node.data.theatre,node.data.lat,node.data.lng)
             if node.data.type == 'restaurant':
-                current_path.append((node.data.type, node[1].data.name, node[1].data.price, node[1].data.rating, node[1].data.opening_time,node[1].data.closing_time,node[1].data.lat, node[1].data.lng))
-                current_path.append('FLAG')
-                output_4_adam[i] =  current_path
-            i += 1
-        else:
-            if node.data.type == 'movie':
-                new_tup = (node[1].data.type, node[1].data.name, node[1].data.start, node[1].data.run_time, node[1].data.theatre,node[1].data.lat,node[1].data.lng)
-                current_path.append(new_tup)
-            if node.data.type == 'restaurant':
-                new_tup = (node[1].data.type, node[1].data.name, node[1].data.price, node[1].data.rating, node[1].data.opening_time,node[1].data.closing_time,node[1].data.lat, node[1].data.lng) 
-                current_path.append(new_tup)
-            get_solutions(sol_dict[node], i, current_path)
+                new_tup = (node.data.type, node.data.name, node.data.price, node.data.rating, node.data.opening_time,node.data.closing_time,node.data.lat, node.data.lng) 
+            output_4_adam.append(new_tup)
+            get_solutions(sol_dict[node], output_4_adam)
 
     return output_4_adam
 

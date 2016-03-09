@@ -22,16 +22,14 @@ import re
 #from Yelp import restaurants.db
 #DATA_DIR = os.path.dirname(__file__)
 #DATABASE_FILENAME = os.path.join(DATA_DIR, 'Yelp/restaurants.db')
-#DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
-DATABASE_FILENAME = '/home/student/CMSC122_Group_Project/asterisk_site/restaurants.db'
+DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
 
 
-dict_api = {'yelp' : ['name_id', 'price', 'rating', 'comments'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
+dict_api = {'yelp' : ['name_id', 'price', 'rating'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
             'f_closed', 'sat_open', 'sat_closed', 'sun_open', 'sun_closed', 'name_id'], 'maps' : ['lon', 'lat', 'name_id']}
 
 #not all of the attributes in our sample input would be included in output-some will be in the where statment etc
 desired_output = ['name_id', 'price', 'rating']
-
 ORDER_BY = 'ORDER BY yelp.name_id, yelp.price, yelp.rating' 
 
 #some tables more important than others-eg yelp table more important than twitter etc
@@ -41,36 +39,27 @@ tables = ['yelp', 'time', 'maps']
 dict_what = {'price' : ['yelp.price' + '<=' + '?']}
 dict_what['distance'] = ['maps.distance' + '<=' + '?']
 dict_what['rating'] = ['yelp.rating' + '>=' + '?']
-dict_what['m_open'] = ['time.m_open' + '<=' + '?']
-dict_what['m_closed'] = ['? <= time.m_closed AND time.m_closed <= ?']
-dict_what['t_open'] = ['time.t_open' + '<=' + '?']
-dict_what['t_closed'] = ['? <= time.t_closed AND time.t_closed <= ?']
-dict_what['w_open'] = ['time.w_open' + '<=' + '?']
-dict_what['w_closed'] = ['? <= time.w_closed AND time.w_closed <= ?']
-dict_what['r_open'] = ['time.r_open' + '<=' + '?']
-dict_what['r_closed'] = ['? <= time.r_closed AND time.r_closed <= ?']
-dict_what['f_open'] = ['time.f_open' + '<=' + '?']
-dict_what['f_closed'] = ['? <= time.f_closed AND time.f_closed <= ?']
-dict_what['sat_open'] = ['time.sat_open' + '<=' + '?']
-dict_what['sat_closed'] = ['? <= time.sat_closed AND time.sat_closed <= ?']
-dict_what['sun_open'] = ['time.sun_open' + '<=' + '?']
-dict_what['sun_closed'] = ['? <= time.sun_closed AND time.m_closed <= ?']
-dict_what['comments'] = ['yelp.comments REGEXP ?']
+dict_what['m_open'] = ['time.m_open' + '>=' + '?']
+dict_what['m_closed'] = ['time.m_closed' + '<=' + '?']
+dict_what['t_open'] = ['time.m_open' + '>=' + '?']
+dict_what['t_closed'] = ['time.t_closed' + '<=' + '?']
+dict_what['w_open'] = ['time.w_open' + '>=' + '?']
+dict_what['w_closed'] = ['time.w_closed' + '<=' + '?']
+dict_what['r_open'] = ['time.r_open' + '>=' + '?']
+dict_what['r_closed'] = ['time.r_closed' + '<=' + '?']
+dict_what['f_open'] = ['time.f_open' + '>=' + '?']
+dict_what['f_closed'] = ['time.f_closed' + '<=' + '?']
+dict_what['sat_open'] = ['time.sat_open' + '>=' + '?']
+dict_what['sat_closed'] = ['time.sat_closed' + '<=' + '?']
+dict_what['sun_open'] = ['time.sun_open' + '>=' + '?']
+dict_what['sun_closed'] = ['time.sun_closed' + '<=' + '?']
+#dict_what['name_id'] = ['yelp.name_id'  + '=' + '?']
+
+
 
 #sample input (needs to be ordered):
-sample = { 'name_id':'KFC','price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 'comments' : 'asdfads good',
-'preferences' : ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed', 'comments' ] }
-sample1 = {'preferences': ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed'], 'lon': -87.5966772, 'price': 1, 'lat': 41.8000353, 'rating': 2, 'm_open': 600, 'm_closed': 2400}
-
-def regexp(expr, item):
-    reg = re.compile(expr)
-    return reg.search(item) is not None
-
-def remaker(words):
-    words = words.split()
-    words = ['(' + word + ')' for word in words ]
-    rx = '|'.join(words)
-    return rx
+sample = {'name_id':'KFC', 'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 
+'preferences' : ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed' ] }
 
 def query_relations(sample):
     relation_list = []
@@ -111,12 +100,13 @@ def query_join(sample):
 
 
 def query_select(sample):
+    
     relations = query_relations(sample)
     select_list = []
     count = []
     samples = list(sample.keys())
-    #print('sample:', samples)
-    #print('relations:', relations)
+    print('sample:', samples)
+    print('relations:', relations)
     #for param in sample:
     for param in desired_output:
         for table in relations:
@@ -139,17 +129,10 @@ def query_where(sample):
             else:
                 what_list.append(dict_what[i])
                 where_param.append(i)
-    time_constraint = where_param[-2]
-    time_last = where_param[-1]
-    where_param.remove(time_last)
-    for i in [time_constraint, time_last]:
-        where_param.append(i)
     return what_list, where_param
 
 def prelim_assembly(sample):
-
-    SELECT = 'SELECT' + ' DISTINCT ' + ",".join(query_select(sample))
-
+    SELECT = 'SELECT' + " "  + ",".join(query_select(sample))
     FROM = 'FROM' + " " + " JOIN ".join(query_relations(sample))
     on_list = []
     on_list_filter = []
@@ -171,7 +154,6 @@ def prelim_assembly(sample):
 
 def prelim_algorithm(sample):
     db = sqlite3.connect(DATABASE_FILENAME)
-    db.create_function("REGEXP", 2, regexp)
     c = db.cursor()
     s = prelim_assembly(sample)[0]
     args = prelim_assembly(sample)[1]
@@ -183,8 +165,6 @@ def prelim_algorithm(sample):
     return result
 
 def algorithm(sample):
-    if 'comments' in list(sample.keys()):
-        sample['comments'] = remaker(sample['comments'])
     query_return = prelim_algorithm(sample)
     #print('query return:', query_return)
     if len(sample['preferences']) == 0:

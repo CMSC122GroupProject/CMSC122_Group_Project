@@ -119,7 +119,7 @@ def movies_query_list(request):
         dict_movies = {}
         for entry in brandon:
             if entry[0] == 'movie':
-                obj = movie(entry[1], entry[2], entry[3], entry[4], entry[5], travel_from_home = 0, type = entry[0])
+                obj = movie(entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], travel_from_home = 0, type = entry[0])
                 obj_pair = [('Event Type', entry[0]), ('name', entry[1]), ('start time', entry[2]), ('run time', entry[3]), ('theatre'), entry[4]]
                 if rv not in dict_movies:
                     dict_movies[rv] = []
