@@ -61,10 +61,11 @@ def get_movies_fandango(url, theatre_max = 3):
                 for movie in movies:
                     title = movie.find(itemprop = 'name')['content']
                     runtime = movie.find(itemprop = 'duration')['content']
-                    data_dict[name]['movies'][title] = {}
                     runtime = scrub_runtime(runtime)
+                    if scrub_runtime(runtime) == 0:
+                        pass
+                    data_dict[name]['movies'][title] = {}
                     data_dict[name]['movies'][title]['run_time'] = runtime
-
                     start_times = movie.find_all(itemprop = 'startDate')
                     starting = []
                     for start in start_times:
