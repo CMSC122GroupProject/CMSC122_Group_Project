@@ -5,6 +5,18 @@ import sys
 import queue
 from .Maps import hsine, get_coordinates, travel_time
 
+def later(t1, t2):
+    h1 = int(t1 / 100)
+    h2 = int(t2 / 100)
+    m1 = t1 % 100
+    m2 = t2 % 100
+    m = m1 + m2
+    hn = int(m / 60)
+    rm = m - hn * m
+    h = h1 + h2 + hn
+    m = rm
+    return(h * 100 + m)
+
 def get_url_flixster(zip_code):
 
     base_url = 'http://igoogle.flixster.com/igoogle/showtimes?movie=all&date='
@@ -62,7 +74,7 @@ def get_movies_fandango(url, theatre_max = 3):
                     title = movie.find(itemprop = 'name')['content']
                     runtime = movie.find(itemprop = 'duration')['content']
                     runtime = scrub_runtime(runtime)
-                    if scrub_runtime(runtime) == 0:
+                    if runtime == 0:
                         pass
                     data_dict[name]['movies'][title] = {}
                     data_dict[name]['movies'][title]['run_time'] = runtime
