@@ -5,7 +5,7 @@ from .forms import DineQueryForm
 from .asterisk_pre_algo import dict_api, desired_output, tables, dict_what, DATABASE_FILENAME
 from .asterisk_pre_algo import query_relations, query_join, query_where, query_select, prelim_assembly, prelim_algorithm, algorithm
 import googlemaps
-from .movies import go
+from .movies import go, movie, restaurant
 
 
 import sqlite3
@@ -112,12 +112,45 @@ def movies_query_list(request):
                 day_table = key
                 break
 
-        print(sample)
+        #print(sample)
         brandon = go(movie_output, query.opening_time, query.closing_time, query.transport_by, query.latitude, query.longitude, 60615)
-        print(brandon)
-        c = {'dining_query_results': list(movie_output), 'headers' : ['Restaurants', 'Price (1-5) ', 'Rating (1-5) ']
-        ,'timing' : [day_table + ':' + " " + 'Opening Time', day_table + ':' + " "+'Closing Time' ] }
+        rv = 0
+        longest_list = 0
+        dict_movies = {}
+        for entry in brandon:
+            if entry[0] == 'movie':
+                obj = movie(entry[1], entry[2], entry[3], entry[4], entry[5], travel_from_home = 0, type = entry[0])
+                obj_pair = [('Event Type', entry[0]), ('name', entry[1]), ('start time', entry[2]), ('run time', entry[3]), ('theatre'), entry[4]]
+                if rv not in dict_movies:
+                    dict_movies[rv] = []
+                
+                dict_movies[rv].append(obj_pair)
+            if entry[0] == 'restaurant':
+                obj = restaurant(entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], type = entry[0])
+                obj_pair = [('Event Type', entry[0]), ('name', entry[1]), ('price', entry[2]), ('rating', entry[3]), ('opening_time', entry[4]),
+                            ('closing_time', entry[5])]
+                if rv not in dict_movies:
+                    dict_movies[rv] = []
+                dict_movies[rv].append(obj_pair)
+            if entry[0] == 'flag':
+                if len(dict_movies[rv]) > longest_list:
+                    longest_list = len(dict_movies[rv])
+                rv += 1
+        movie_to_html = list(dict_movies.values())
+        header_list = []
+        rv = 1
+        for i in range(longest_list):
+            header_list.append('Event' + " " + rv)
+            rv +=1
 
+
+
+
+        #print(brandon)
+        #c = {'dining_query_results': list(movie_output), 'headers' : ['Restaurants', 'Price (1-5) ', 'Rating (1-5) ']
+        #,'timing' : [day_table + ':' + " " + 'Opening Time', day_table + ':' + " "+'Closing Time' ] }
+
+        c = {'header_num': header_list, 'movie_row': movie_to_html}
         return render(request, 'restaurants/movies_query_list.html', c)
 
 def main_page(request):
