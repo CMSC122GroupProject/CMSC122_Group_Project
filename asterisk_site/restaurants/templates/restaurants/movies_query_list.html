@@ -30,16 +30,15 @@
                 <tr class = 'tr'>
                 {%    for head in header_num    %}   
                     <th class = "th"> {{head}} </th>
-                    <!--
-                    <th class = "th"> Restaurants </th>
-                    <th class = "th"> Price (1-5) </th>
-                    <th class = "th"> Rating (1-5) </th>
-                                                    -->
-                {%  endfor  %} 
-                </tr>
+                    
+                    
+                                                    
+
+                {%  endfor  %}  
+                </tr> 
                 {% for result in movie_row %}
-            
-                <tr> 
+                    
+                <tr class = 'tr'> 
                     {% for entry in result %} 
                         
                         <td class = "td"> 
@@ -53,8 +52,9 @@
                         </ul>
                         </td>
                      
-
-                    {% endfor %}
+                    
+                    {%   endfor  %}
+                    
 
                 </tr>
                 

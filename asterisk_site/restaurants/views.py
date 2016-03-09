@@ -125,24 +125,27 @@ def movies_query_list(request):
                     dict_movies[rv] = []
                 
                 dict_movies[rv].append(obj_pair)
-            if entry[0] == 'restaurant':
+            elif entry[0] == 'restaurant':
                 obj = restaurant(entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], type = entry[0])
                 obj_pair = [('Event Type', entry[0]), ('name', entry[1]), ('price', entry[2]), ('rating', entry[3]), ('opening_time', entry[4]),
                             ('closing_time', entry[5])]
                 if rv not in dict_movies:
                     dict_movies[rv] = []
                 dict_movies[rv].append(obj_pair)
-            if entry[0] == 'flag':
+            else:
+                print('FOUND ITTT')
                 if len(dict_movies[rv]) > longest_list:
                     longest_list = len(dict_movies[rv])
                 rv += 1
         movie_to_html = list(dict_movies.values())
+        #for val in dict_movies.values()
+            #movie_to_html.append(val)
         header_list = []
         rv = 1
         for i in range(longest_list):
-            header_list.append('Event' + " " + rv)
-            rv +=1
-
+            header_list.append('Event' + " " + str(rv))
+            rv += 1
+        rv = 0
 
 
 
@@ -151,7 +154,10 @@ def movies_query_list(request):
         #,'timing' : [day_table + ':' + " " + 'Opening Time', day_table + ':' + " "+'Closing Time' ] }
 
         c = {'header_num': header_list, 'movie_row': movie_to_html}
+        print(len(header_list))
+
         return render(request, 'restaurants/movies_query_list.html', c)
+
 
 def main_page(request):
     return render(request, 'restaurants/home_page.html')
