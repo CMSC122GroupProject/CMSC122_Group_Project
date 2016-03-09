@@ -4,7 +4,7 @@ import datetime
 import sys
 import queue
 sys.path.insert(0, '/home/student/CMSC122_Group_Project/Gmaps')
-import Maps
+from Maps import hsine, get_coordinates, travel_time
 
 def get_url_flixster(zip_code):
 
@@ -330,7 +330,7 @@ def movie_and_dinner_algo(graph, home_node, start_time, end_time, efficiency = 0
             if node[1][0].efficiency < efficiency:
                 index = graph.index(node[1][0])
                 graph[index] = node[1][0]
-                sol_dict[node[1][0]] = (start_time, movie_and_dinner_algo(graph, node[1][0], node[0], end_time, efficiency, eating_time), node[0])
+                sol_dict[node[1][0]] = movie_and_dinner_algo(graph, node[1][0], node[0], end_time, efficiency, eating_time)
 
         return sol_dict
 
@@ -341,20 +341,20 @@ def get_solutions(sol_dict, i = 1, current_path = []):
     for node in sol_dict.keys():
         if sol_dict[node] == {}:
             if node.data.type == 'movie':
-                current_path.append((node[1].data.type, node[1].data.name, node[1].data.start, node[1].data.run_time, node[1].data.theatre,node[1].data.lat,node[1].data.lng))
+                current_path.append((node.data.type, node.data.name, node.data.start, node.data.run_time, node.data.theatre,node.data.lat,node.data.lng))
                 current_path.append('FLAG')
                 output_4_adam[i] = current_path
             if node.data.type == 'restaurant':
-                current_path.append((node.data.type, node[1].data.name, node[1].data.price, node[1].data.rating, node[1].data.opening_time,node[1].data.closing_time,node[1].data.lat, node[1].data.lng))
+                current_path.append((node.data.type, node.data.name, node.data.price, node.data.rating, node.data.opening_time,node.data.closing_time,node.data.lat, node.data.lng))
                 current_path.append('FLAG')
                 output_4_adam[i] =  current_path
             i += 1
         else:
             if node.data.type == 'movie':
-                new_tup = (node[1].data.type, node[1].data.name, node[1].data.start, node[1].data.run_time, node[1].data.theatre,node[1].data.lat,node[1].data.lng)
+                new_tup = (node.data.type, node.data.name, node.data.start, node.data.run_time, node.data.theatre,node.data.lat,node.data.lng)
                 current_path.append(new_tup)
             if node.data.type == 'restaurant':
-                new_tup = (node[1].data.type, node[1].data.name, node[1].data.price, node[1].data.rating, node[1].data.opening_time,node[1].data.closing_time,node[1].data.lat, node[1].data.lng) 
+                new_tup = (node.data.type, node.data.name, node.data.price, node.data.rating, node.data.opening_time,node.data.closing_time,node.data.lat, node.data.lng) 
                 current_path.append(new_tup)
             get_solutions(sol_dict[node], i, current_path)
 
