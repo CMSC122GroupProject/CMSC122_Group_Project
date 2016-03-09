@@ -22,8 +22,8 @@ import re
 #from Yelp import restaurants.db
 #DATA_DIR = os.path.dirname(__file__)
 #DATABASE_FILENAME = os.path.join(DATA_DIR, 'Yelp/restaurants.db')
-#DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
-DATABASE_FILENAME = '/home/student/CMSC122_Group_Project/asterisk_site/restaurants.db'
+DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
+#DATABASE_FILENAME = '/home/student/CMSC122_Group_Project/asterisk_site/restaurants.db'
 
 
 dict_api = {'yelp' : ['name_id', 'price', 'rating', 'comments'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
@@ -162,7 +162,7 @@ def prelim_assembly(sample):
     for i in query_where(sample)[0]:
         where = where + i
     WHERE = "WHERE" + " " + " AND ".join(where)
-    query = SELECT + " " + FROM + " " + ON + " " + WHERE + " " + ORDER_BY
+    query = SELECT + " " + FROM + " " + ON + " " + WHERE + " " + ORDER_BY + ' LIMIT 5'
     quest_which = []
     for i in query_where(sample)[1]:
         quest_which.append(sample[i])
