@@ -18,14 +18,24 @@ day_dict = {'Monday': ('m_open', 'm_closed'), 'Tuesday': ('t_open', 't_closed'),
 
 
 def dine_query_list(request):
+    #dining_queries = Dine_query.objects.order_by('created_date')
+    
     dining_queries = Dine_query.objects.order_by('created_date')
+    if not dining_queries:
+        return render(request, 'restaurants/dine_query_list.html', {'headers' : ['  No Query Submitted ']}) 
+    else:
+        query = dining_queries[0]
+    
+    #query = Dine_query.objects.order_by('created_date')[0]
     #print('hello')
-    print('did it run')
+        print('did it run')
     #results = []
-    for query in dining_queries:
-        #assuming of course we just have one query############        
+    
+    #for query in dining_queries:
+        
+    #assuming of course we just have one query############        
         day = query.day
-        #print(day)
+    #print(day)
         times = day_dict[day]
         transport_method = query.transport_by
         #lat = query.latitude
@@ -42,17 +52,34 @@ def dine_query_list(request):
                    'lon' : query.longitude, 'lat': query.latitude   ,'preferences' : [ 'name_id', 'distance', 'price', 'rating', times[0], times[1] ] }
         desired_output.append(times[0])
         desired_output.append(times[1])
+               
+        
         algo = prelim_algorithm(sample)
+        print(algo)
         desired_output.append('lat')
         desired_output.append('lon')
         movie_output = prelim_algorithm(sample)
-        c = {'dining_query_results': set(algo), 'timing' : [times[0], times[1] ] }
-        print(movie_output)
+        for i in ['lat', 'lon', times[0], times[1]]:
+            desired_output.remove(i)
+        for key in day_dict.keys():
+            if (times[0], times[1]) == day_dict[key]:
+                day_table = key
+                break
+    
+        c = {'dining_query_results': list(algo), 'headers' : ['Restaurants', 'Price (1-5) ', 'Rating (1-5) ']
+        ,'timing' : [day_table + ':' + " " + 'Opening Time', day_table + ':' + " "+'Closing Time' ] }
+        #print(movie_output)
         #results.append(algo)
     #return results
     #return render(request, 'restaurants/dine_query_list.html', {'dining_query_results': results })
 
-    return render(request, 'restaurants/dine_query_list.html', c) 
+        return render(request, 'restaurants/dine_query_list.html', c) 
+
+def movies_query_list(request):
+    return render(request, 'restaurants/movies_query_list.html')
+
+def main_page(request):
+    return render(request, 'restaurants/home_page.html')
 
 def dine_query_new(request):
     if request.method == "POST":
@@ -60,6 +87,8 @@ def dine_query_new(request):
         form = DineQueryForm(request.POST)
         if form.is_valid():
             form.save()
+            #Dine_query.objects.order_by('created_date').delete()
+
             form = DineQueryForm()
             #form = DineQueryForm(initial = {'price': 5, 'desired_rating': 1, 'opening_time': 600, 'closing_time': 2400})
     else:
