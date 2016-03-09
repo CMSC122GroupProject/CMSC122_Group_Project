@@ -111,7 +111,6 @@ def query_join(sample):
 
 
 def query_select(sample):
-    
     relations = query_relations(sample)
     select_list = []
     count = []
