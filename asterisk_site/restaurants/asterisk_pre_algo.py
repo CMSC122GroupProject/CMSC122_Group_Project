@@ -203,8 +203,6 @@ def algorithm(sample):
 
 
 
-
-
     '''
     if query_return != []:
         return query_return
