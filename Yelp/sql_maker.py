@@ -52,15 +52,14 @@ for r in restaurants:
     comments = data['comments']
     cm = set([])
     for word in comments:
-        ss = wn.synsets(word, pos = 'a') + wn.synsets(word, pos = 'r')
-        cm.update(set(ss))
+        ss = wn.synsets(word, pos = 's') + wn.synsets(word, pos = 'r')
         if len(ss) > 0:
-            hyp = []
+            lemmas = []
             for s in ss:
-                hyp += s.hyponyms() + s.hypernyms()
-            cm.update(hyp)
+                lemmas += s.lemmas() + s.lemmas()
+            cm.update(lemmas)
     cm = list(cm)
-    cm = [syn.name().split(".")[0] for syn in cm]
+    cm = [syn.name().split(".")[-1] for syn in cm]
     cm = " ".join(cm)
     time_to_append = []
     opening = [hours['Mon']['open'], hours['Tue']['open'], hours['Wed']['open'], hours['Thu']['open'], hours['Fri']['open'], hours['Sat']['open'], hours['Sun']['open']]

@@ -178,6 +178,11 @@ def get_all_movies(zipcode):
         fan[k] = flix[k]
     return fan
 
+class Home:
+    def __init__(self,lat,lng, name='home'):
+        self.lat = lat
+        self.lng = lng
+        self.name = 'home'
 
 class movie:
     def __init__(self, name, start, run_time, theatre, lat, lng, travel_from_home=0, type = 'movie'):
@@ -206,26 +211,27 @@ class restaurant:
             self.closing_time = closing_time
         self.type = "restaurant"    
 
-def get_movie_objs(data_dict, home, user_start, user_end, theatre_max = 2):
+def get_movie_objs(data_dict, home, user_start, user_end, travel_mode = 'driving'):
 
     movies = set([])
 
     theatre_count = 0
 
     for theatre in data_dict.keys():
-        if theatre_count < theatre_max:
-            theatre_count += 1
-            address = data_dict[theatre]['address']
-            (lat,lng) = Maps.get_coordinates(address)
-            travel_time = Maps.haversine(home.lat, home.lng,lat, lng)
-            if user_start + travel_time < user_end:
-                for name in data_dict[theatre]['movies'].keys():
-                    run_time = data_dict[theatre]['movies'][name]['run_time']
-                    for time in data_dict[theatre]['movies'][name]['start_times']:
-                        if run_time != None:
-                            if time > user_start and  time + run_time < user_end:
-                                movie_obj = movie(name, time, run_time, theatre, lat, lng, travel_time)
-                                movies.add(movie_obj)
+        #if theatre_count < theatre_max:
+         #   theatre_count += 1
+        address = data_dict[theatre]['address']
+        (lat,lng) = Maps.get_coordinates(address)
+
+        travel_time = Maps.haversine(home.lat, home.lng,lat, lng, travel_mode)
+        if user_start + travel_time < user_end:
+            for name in data_dict[theatre]['movies'].keys():
+                run_time = data_dict[theatre]['movies'][name]['run_time']
+                for time in data_dict[theatre]['movies'][name]['start_times']:
+                    if run_time != None:
+                        if time > user_start and  time + run_time < user_end:
+                            movie_obj = movie(name, time, run_time, theatre, lat, lng, travel_time)
+                            movies.add(movie_obj)
 
     return movies
 
@@ -255,13 +261,6 @@ class Node:
     def add_edge(self, neighbor, weight):
         self.edges.append((neighbor, weight))
 
-#more for testing purposes
-class Home:
-    def __init__(self,lat,lng, name='home'):
-        self.lat = lat
-        self.lng = lng
-        self.name = 'home'
-
 def get_graph(restaurants, movies, home, travel_mode = 'driving'):
 
     graph = []
@@ -275,7 +274,7 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
         
         for node in graph:
             #move to movie?
-            travel = Maps.haversine(node.data.lat, node.data.lng, movie.lat, movie.lng)
+            travel = Maps.haversine(node.data.lat, node.data.lng, movie.lat, movie.lng, travel_mode)
             node.add_edge(show,travel)
             show.add_edge(node, travel)
 
@@ -283,10 +282,10 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
 
     for restaurant in restaurants:
         eat = Node(restaurant)
-        home.add_edge(eat, Maps.haversine(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng))
+        home.add_edge(eat, Maps.haversine(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng, travel_mode))
 
         for node in graph:
-            travel = Maps.haversine(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng)
+            travel = Maps.haversine(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng, travel_mode)
             node.add_edge(eat,travel)
             eat.add_edge(node, travel)
 
@@ -331,29 +330,55 @@ def movie_and_dinner_algo(graph, home_node, start_time, end_time, efficiency = 0
             if node[1][0].efficiency < efficiency:
                 index = graph.index(node[1][0])
                 graph[index] = node[1][0]
-                sol_dict[node[1][0]] = movie_and_dinner_algo(graph, node[1][0], node[0], end_time, efficiency, eating_time)
+                sol_dict[node[1][0]] = (start_time, movie_and_dinner_algo(graph, node[1][0], node[0], end_time, efficiency, eating_time), node[0])
 
         return sol_dict
 
-def get_solutions(sol_dict):
+def get_solutions(sol_dict, i = 1, current_path = []):
 
-    for jaunt in sol_dict.keys():
-        if sol_dict[jaunt] == {}:
-            print(jaunt.data.name)
-            print('end of travel')
+#movie    def __init__(self, name, start, run_time, theatre, lat, lng, travel_from_home=0, type = 'movie'):
+#restaurant     def __init__(self, name, price, rating, opening_time, closing_time, lat, lng, type = 'restaurant'):
+
+
+
+    output_4_adam = {}
+
+    for node in sol_dict.keys():
+        if sol_dict[node] == {}:
+            if node.data.type == 'movie':
+                current_path.append((node[1].data.type, node[1].data.name, node[1].data.start, node[1].data.run_time, node[1].data.theatre,node[1].data.lat,node[1].data.lng))
+                current_path.append('FLAG')
+                output_4_adam[i] = current_path
+            if node.data.type == 'restaurant':
+                current_path.append((node.data.type, node[1].data.name, node[1].data.price, node[1].data.rating, node[1].data.opening_time,node[1].data.closing_time,node[1].data.lat, node[1].data.lng))
+                current_path.append('FLAG')
+                output_4_adam[i] =  current_path
+            i += 1
         else:
-            print(jaunt.data.name)
-            get_solutions(sol_dict[jaunt])
+            if node.data.type == 'movie':
+                new_tup = (node[1].data.type, node[1].data.name, node[1].data.start, node[1].data.run_time, node[1].data.theatre,node[1].data.lat,node[1].data.lng)
+                current_path.append(new_tup)
+            if node.data.type == 'restaurant':
+                new_tup = (node[1].data.type, node[1].data.name, node[1].data.price, node[1].data.rating, node[1].data.opening_time,node[1].data.closing_time,node[1].data.lat, node[1].data.lng) 
+                current_path.append(new_tup)
+            get_solutions(sol_dict[node], i, current_path)
+
+    return output_4_adam
 
 
 
+def go(restaurant_list, user_start, user_end, travel_mode, user_lat, user_lng, user_zip):
 
+    home = Home(user_lat, user_lng)
 
+    movie_data = get_all_movies(user_zip)
+    movie_objs = get_movie_objs(movie_data, home, user_start, user_end, travel_mode)
+    rest_objs = get_restaurant_objs(restaurant_list)
+    (home_node, graph_of_travels) = get_graph(rest_objs, movie_objs, home, travel_mode)
+    sol_dict = movie_and_dinner_algo(graph_of_travels, home_node, user_start, user_end)
+    output = get_solutions(sol_dict)
 
-
-
-
-
+    return output 
 
 '''
 def get_efficiency_dict(graphs):
