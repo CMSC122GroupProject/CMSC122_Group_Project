@@ -28,7 +28,7 @@
         </div>
         <table  id = " t01">
                 <tr class = 'tr'>
-                {%    for head in headers     %}   
+                {%    for head in header_num    %}   
                     <th class = "th"> {{head}} </th>
                     <!--
                     <th class = "th"> Restaurants </th>
@@ -36,15 +36,22 @@
                     <th class = "th"> Rating (1-5) </th>
                                                     -->
                 {%  endfor  %} 
-                {% for time in timing  %}
-                    <th class = "th"> {{time}} </th>
-                {% endfor %}
                 </tr>
-                {% for result in dining_query_results %}
+                {% for result in movie_row %}
             
                 <tr> 
                     {% for entry in result %} 
-                    <td class = "td"> {{entry}} </td>
+                        
+                        <td class = "td"> 
+                        <ul>
+                        {%    for tuples in   entry    %}
+
+                            
+                                <li> {{tuples}} </li>
+
+                        {%   endfor  %}
+                        </ul>
+                        </td>
                      
 
                     {% endfor %}
