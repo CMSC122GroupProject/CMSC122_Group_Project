@@ -221,9 +221,9 @@ def get_movie_objs(data_dict, home, user_start, user_end, travel_mode = 'driving
         #if theatre_count < theatre_max:
          #   theatre_count += 1
         address = data_dict[theatre]['address']
-        (lat,lng) = Maps.get_coordinates(address)
+        (lat,lng) = get_coordinates(address)
 
-        travel_time = Maps.haversine(home.lat, home.lng,lat, lng, travel_mode)
+        travel_time = hsine(home.lat, home.lng,lat, lng, travel_mode)
         if user_start + travel_time < user_end:
             for name in data_dict[theatre]['movies'].keys():
                 run_time = data_dict[theatre]['movies'][name]['run_time']
@@ -274,7 +274,7 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
         
         for node in graph:
             #move to movie?
-            travel = Maps.haversine(node.data.lat, node.data.lng, movie.lat, movie.lng, travel_mode)
+            travel = hsine(node.data.lat, node.data.lng, movie.lat, movie.lng, travel_mode)
             node.add_edge(show,travel)
             show.add_edge(node, travel)
 
@@ -282,10 +282,10 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
 
     for restaurant in restaurants:
         eat = Node(restaurant)
-        home.add_edge(eat, Maps.haversine(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng, travel_mode))
+        home.add_edge(eat, hsine(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng, travel_mode))
 
         for node in graph:
-            travel = Maps.haversine(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng, travel_mode)
+            travel = hsine(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng, travel_mode)
             node.add_edge(eat,travel)
             eat.add_edge(node, travel)
 
@@ -335,11 +335,6 @@ def movie_and_dinner_algo(graph, home_node, start_time, end_time, efficiency = 0
         return sol_dict
 
 def get_solutions(sol_dict, i = 1, current_path = []):
-
-#movie    def __init__(self, name, start, run_time, theatre, lat, lng, travel_from_home=0, type = 'movie'):
-#restaurant     def __init__(self, name, price, rating, opening_time, closing_time, lat, lng, type = 'restaurant'):
-
-
 
     output_4_adam = {}
 
