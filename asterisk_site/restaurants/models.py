@@ -44,9 +44,9 @@ class Dine_query(models.Model):
     transport_by = models.CharField(choices=transport_choices, max_length=15)
 
 
-    def __repr__(self):
-        return '{}: Price: {}, Desired Rating: {}, Opening Time: {}, Closing Time: {}, Distance: {}'.format( self.price, self.desired_rating, 
-            self.opening_time, self.closing_time, self.distance)
+    #def __repr__(self):
+        #return '{}: Price: {}, Desired Rating: {}, Opening Time: {}, Closing Time: {}, Distance: {}'.format( self.price, self.desired_rating, 
+            #self.opening_time, self.closing_time, self.distance)
 
     #def __str__(self):
         #return '{}: Price: {}, Desired Rating: {}'.format( self.price, self.desired_rating)

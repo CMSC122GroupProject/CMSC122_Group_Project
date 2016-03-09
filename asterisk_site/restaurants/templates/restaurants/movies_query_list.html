@@ -26,8 +26,35 @@
 
             <p> Processed queries are also below: </p>
         </div>
-                    
+        <table  id = " t01">
+                <tr class = 'tr'>
+                {%    for head in headers     %}   
+                    <th class = "th"> {{head}} </th>
+                    <!--
+                    <th class = "th"> Restaurants </th>
+                    <th class = "th"> Price (1-5) </th>
+                    <th class = "th"> Rating (1-5) </th>
+                                                    -->
+                {%  endfor  %} 
+                {% for time in timing  %}
+                    <th class = "th"> {{time}} </th>
+                {% endfor %}
+                </tr>
+                {% for result in dining_query_results %}
+            
+                <tr> 
+                    {% for entry in result %} 
+                    <td class = "td"> {{entry}} </td>
+                     
+
+                    {% endfor %}
+
+                </tr>
+                
+                {%  endfor %}
+        </table>             
+    
+
+
     </body>
-
-
 </html> 
