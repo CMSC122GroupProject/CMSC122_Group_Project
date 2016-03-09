@@ -75,6 +75,12 @@ def dine_query_list(request):
 
         return render(request, 'restaurants/dine_query_list.html', c) 
 
+def movies_query_list(request):
+    return render(request, 'restaurants/movies_query_list.html')
+
+def main_page(request):
+    return render(request, 'restaurants/home_page.html')
+
 def dine_query_new(request):
     if request.method == "POST":
         Dine_query.objects.order_by('created_date').delete()
