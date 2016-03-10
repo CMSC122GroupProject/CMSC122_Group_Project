@@ -119,14 +119,14 @@ def movies_query_list(request):
         dict_movies = {}
         for entry in brandon:
             if entry[0] == 'movie':
-                obj = movie(entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], travel_from_home = 0, type = entry[0])
+                #obj = movie(entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], travel_from_home = 0, type = entry[0])
                 obj_pair = [('Event Type', entry[0]), ('name', entry[1]), ('start time', entry[2]), ('run time', entry[3]), ('theatre'), entry[4]]
                 if rv not in dict_movies:
                     dict_movies[rv] = []
                 
                 dict_movies[rv].append(obj_pair)
             elif entry[0] == 'restaurant':
-                obj = restaurant(entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], type = entry[0])
+                #obj = restaurant(entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], type = entry[0])
                 obj_pair = [('Event Type', entry[0]), ('name', entry[1]), ('price', entry[2]), ('rating', entry[3]), ('opening_time', entry[4]),
                             ('closing_time', entry[5])]
                 if rv not in dict_movies:
@@ -141,10 +141,11 @@ def movies_query_list(request):
         #for val in dict_movies.values()
             #movie_to_html.append(val)
         header_list = []
-        rv = 1
+        rv = 0
         for i in range(longest_list):
-            header_list.append('Event' + " " + str(rv))
             rv += 1
+            header_list.append('Event' + " " + str(rv))
+            #rv += 1
         rv = 0
 
 

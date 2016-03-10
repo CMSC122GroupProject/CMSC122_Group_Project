@@ -37,9 +37,10 @@ ORDER_BY = 'ORDER BY yelp.name_id, yelp.price, yelp.rating'
 #some tables more important than others-eg yelp table more important than twitter etc
 tables = ['yelp', 'time', 'maps']
 
+
 #paramters for where statment in SQL query
 dict_what = {'price' : ['yelp.price' + '<=' + '?']}
-dict_what['distance'] = ['maps.distance' + '<=' + '?']
+#dict_what['distance'] = ['maps.distance' + '<=' + '?']
 dict_what['rating'] = ['yelp.rating' + '>=' + '?']
 dict_what['m_open'] = ['time.m_open' + '<=' + '?']
 dict_what['m_closed'] = ['? <= time.m_closed AND time.m_closed <= ?']
@@ -58,8 +59,8 @@ dict_what['sun_closed'] = ['? <= time.sun_closed AND time.m_closed <= ?']
 dict_what['comments'] = ['yelp.comments REGEXP ?']
 
 #sample input (needs to be ordered):
-sample = { 'name_id':'KFC','price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 'comments' : 'asdfads good',
-'preferences' : ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed', 'comments' ] }
+sample = { 'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 'comments' : 'asdfads good'}
+#'preferences' : ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed', 'comments' ] }
 sample1 = {'preferences': ['name_id', 'distance', 'price', 'rating', 'm_open', 'm_closed'], 'lon': -87.5966772, 'price': 1, 'lat': 41.8000353, 'rating': 2, 'm_open': 600, 'm_closed': 2400}
 
 def regexp(expr, item):
@@ -129,21 +130,30 @@ def query_select(sample):
 
 def query_where(sample):
     parameters = list(dict_what.keys())
-    inputs = sample['preferences']
+    #inputs = sample['preferences']
+    inputs = list(sample.keys())
     what_list = []
     where_param = []
     for i in inputs:
         if i in parameters:
-            if i == 'distance':
-                pass
+            #if i == 'distance':
+                #pass
+            if i[-6:] == 'closed':
+                day = i[0]
+                what_list.append(dict_what[i])
+                where_param.append("_".join((day, 'open')))
+                print("_".join((day, 'open')))
+                where_param.append(i)
             else:
                 what_list.append(dict_what[i])
                 where_param.append(i)
-    time_constraint = where_param[-2]
-    time_last = where_param[-1]
-    where_param.remove(time_last)
-    for i in [time_constraint, time_last]:
-        where_param.append(i)
+            #what_list.append(dict_what[i])
+            #where_param.append(i)
+    #time_constraint = where_param[-2]
+    #time_last = where_param[-1]
+    #where_param.remove(time_last)
+    #for i in [time_constraint, time_last]:
+        #where_param.append(i)
     return what_list, where_param
 
 def prelim_assembly(sample):
