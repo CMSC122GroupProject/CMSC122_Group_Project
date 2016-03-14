@@ -1,3 +1,5 @@
+#DOCUMENTATION~DIRECT COPY: generated from Django, added a few paths for project specific purposes, 
+#those added paths from DjangoGirls
 #password: Anightonthetown
 """
 Django settings for mysite project.

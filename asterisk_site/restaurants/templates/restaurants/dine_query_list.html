@@ -1,3 +1,5 @@
+<!-- DOCUMENTATION~Original: though the css links are from DjangoGirls, the loops and formating (tables for example) 
+are original, using common HTML syntax but not copied directly from anywhere   -->
 {% load staticfiles %}
 <html >
     <head>
@@ -37,11 +39,7 @@
                 <tr class = 'tr'>
                 {%    for head in headers     %}   
                     <th class = "th"> {{head}} </th>
-                    <!--
-                    <th class = "th"> Restaurants </th>
-                    <th class = "th"> Price (1-5) </th>
-                    <th class = "th"> Rating (1-5) </th>
-                                                    -->
+                    
                 {%  endfor  %} 
                 {% for time in timing  %}
                     <th class = "th"> {{time}} </th>

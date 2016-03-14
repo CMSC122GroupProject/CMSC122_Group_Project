@@ -1,3 +1,6 @@
+#DOCUMENTATION~Modified: Based mostly on GUSTAV's workshop code and DjangoGirls, but modified specific
+#expression for the project
+
 from django.conf.urls import url
 from . import views
 

@@ -1,3 +1,5 @@
+#DOCUMENTATION~Direct COPY (generated from DJANGO)
+
 """
 WSGI config for mysite project.
 

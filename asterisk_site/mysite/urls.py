@@ -1,3 +1,6 @@
+#DOCUMENTATION~MODIFIED: generated from Django, based on Gustav/ DjangoGirls tutorial, but urls specific paths
+#tailored to the project
+
 """mysite URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -15,9 +18,11 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+#
+
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    
+
     url(r'', include('restaurants.urls')),
 ]

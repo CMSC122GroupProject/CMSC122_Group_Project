@@ -1,3 +1,4 @@
+#DOCUMENTATION~DIRECT COPY
 from django.apps import AppConfig
 
 

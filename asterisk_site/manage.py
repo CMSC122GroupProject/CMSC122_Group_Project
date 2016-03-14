@@ -1,3 +1,4 @@
+#DOCUMENTATION~DIRECT COPY (generated from Django)
 #!/usr/bin/env python
 import os
 import sys

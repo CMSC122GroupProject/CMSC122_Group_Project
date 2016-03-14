@@ -11,7 +11,7 @@ def hsine(lat1, lon1, lat2, lon2,travel_mode = 'driving'):
     on the earth (specified in decimal degrees)
     """
     # convert decimal degrees to radians 
-    rate_dict = {'driving':40, 'walking':3.1, 'transit':30}
+    rate_dict = {'driving':40, 'walking':3.1, 'transit':30, 'bicycling': 17}
 
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
 
