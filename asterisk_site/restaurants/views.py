@@ -11,9 +11,7 @@ from .movies import go, movie, restaurant
 import sqlite3
 import os
 import re
-#DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
-#DATA_DIR = os.path.dirname(__file__)
-#DATABASE_FILENAME = os.path.join(DATA_DIR, 'restaurants/restaurants.db')
+
 day_dict = {'Monday': ('m_open', 'm_closed'), 'Tuesday': ('t_open', 't_closed'), 'Wednesday': ('w_open', 'w_closed'), 'Thursday': ('r_open', 'r_closed'),
                 'Friday' : ('f_open', 'f_closed'), 'Saturday' : ('sat_open', 'sat_closed'), 'Sunday' : ('sun_open', 'sun_closed')}
 
@@ -28,7 +26,6 @@ def process_query(request, query):
 
 
 def dine_query_list(request):
-    #dining_queries = Dine_query.objects.order_by('created_date')
     
     dining_queries = Dine_query.objects.order_by('created_date')
     if not dining_queries:
