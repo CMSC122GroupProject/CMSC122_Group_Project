@@ -9,7 +9,6 @@ import datetime
 import sys
 import queue
 from .Maps import get_distance, hsine, get_coordinates, travel_time, get_zip
-#took away . from .Maps
 
 def later(time_start, time_added):
     '''

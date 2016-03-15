@@ -41,14 +41,10 @@ def dine_query_list(request):
     if not dining_queries:
         return render(request, 'restaurants/dine_query_list.html', {'headers' : ['  No Query Submitted ']}) 
     else:
-        query = dining_queries[0]
-        print('did it run')
-    
+        query = dining_queries[0]    
         sample, times = process_query(request, query)
         desired_output.append(times[0])
         desired_output.append(times[1])
-               
-        
         algo = prelim_algorithm(sample)
         
         

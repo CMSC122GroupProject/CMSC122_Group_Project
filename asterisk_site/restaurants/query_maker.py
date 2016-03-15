@@ -40,7 +40,7 @@ dict_what['sun_closed'] = ['? <= time.sun_closed AND time.m_closed <= ?']
 dict_what['comments'] = ['yelp.comments REGEXP ?']
 
 #sample input that algorithm takes ins
-sample = { 'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 'comments' : 'asdfads good'}
+#sample = { 'price': 5, 'lon': 1.5, 'lat': 30, 'rating': 4 , 'm_open' : 800, 'm_closed' : 2100, 'comments' : 'asdfads good'}
 
 sample1 = { 'lon': -87.5966772, 'price': 1, 'lat': 41.8000353, 'rating': 2, 'm_open': 600, 'm_closed': 2400}
 
@@ -127,14 +127,16 @@ def query_where(sample):
     for i in inputs:
         if i in parameters:
             if i[-6:] == 'closed':
-                day = i[0]
+                if i[1] == '_':
+                    day = i[0]
+                else:
+                    day = i[:3]
                 what_list.append(dict_what[i])
                 where_param.append("_".join((day, 'open')))
                 where_param.append(i)
             else:
                 what_list.append(dict_what[i])
                 where_param.append(i)
-            
     return what_list, where_param
 
 def prelim_assembly(sample):
