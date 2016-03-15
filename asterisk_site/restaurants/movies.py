@@ -115,6 +115,10 @@ def scrub_starttime(starttime):
 def get_movies_fandango(url, theatre_max = 3):
     '''
     Scrape fandango for movies given the url. Output to a dictionary.
+    Note, we limit the theatre count to just 3. This dramatically cuts down on the 
+    computation of the algorithm, and does not take away the legitimacy of our 
+    solution (theatres after the first three were often far away or rather
+    insignificant)
     '''
     theatre_count = 1
     data_dict = {}
@@ -189,10 +193,11 @@ def clean_starttime(start):
 def get_movies_flixster(url, theatre_max = 3):
     '''
     Retrieves flixster's movie showtimes for the given url
-    Example usage of site
-    Example_url = 'http://igoogle.flixster.com/igoogle/showtimes?movie=all&date=20160303&postal=21228&submit=Go'
-
-    Ex_dict = {Theatre_name:{address:'', movies:{A:[time_1, time_2, time_3], B:[...]}}}
+    Once again, we limit the theatre count to just 3 for reasons explained
+    above. Flixster provided us the immense benefit of speed (the site is
+    practically plaitext); however, this speed came at a cost of consistency.
+    You will notice the scrape for this site is messy, and we apologize for the 
+    any difficulties in reading over it.
     '''
 
     data_dict = {}
@@ -248,7 +253,7 @@ def get_movies_flixster(url, theatre_max = 3):
 
                         times = times.replace(u'\xa0', u' ')
                         times = times.replace('\n', '').replace('\t', '')
-                        times = times.split(' ') #might be an issue
+                        times = times.split(' ')
                         
                         times = [clean_starttime(start) for start in times]
                         
@@ -272,13 +277,27 @@ def get_all_movies(zipcode, day_of_week):
     return fan
 
 class Home:
+    '''
+    A simple class to represent the home location, which is defined merely
+    as a set of coordinate points. We also save the name of the class for 
+    ease in future functions
+    '''
     def __init__(self,lat,lng, name='home'):
         self.lat = lat
         self.lng = lng
         self.name = 'home'
 
 class movie:
-    def __init__(self, name, start, run_time, theatre, lat, lng, travel_from_home=0, type = 'movie'):
+    '''
+    Another rather simple class that encapsulates all of our data we have
+    surrounding each movie. Note, we store travel_from_home data in this class 
+    but not in the restaurant class due to the nature of developing these 
+    objects (e.g. all movies in the same theatre are the same distance from
+    home, so it's easier to caclulate this value once and store it for each 
+    object).
+    '''
+    def __init__(self, name, start, run_time, theatre, lat, lng, 
+                                            travel_from_home=0, type = 'movie'):            
         self.name = name
         self.start = start
         self.run_time = run_time
@@ -289,13 +308,23 @@ class movie:
         self.type = 'movie' 
 
 class restaurant:
-    def __init__(self, name, price, rating, opening_time, closing_time, lat, lng, type = 'restaurant'):
+    '''
+    Class to encapsulate all the data surrounding the restaurant. This is 
+    entirely based on the output produced from the initial querying the 
+    database, which is why the representation may appear so similar.
+    '''
+    def __init__(self, name, price, rating, opening_time, closing_time, lat, lng, 
+                                                            type = 'restaurant'):
         self.name = name
         self.price = price
         self.rating = rating
         self.opening_time = opening_time
         self.lat = lat
         self.lng = lng
+        #due to constraints inherent in the data/algorithm, we set all restaurants
+        #closing between midnight and 5 am to have a closing time of 2400.
+        #this eases the process of comparing times (e.g. 2300 < 2400 but
+        #2300 !< 200, despite the fact that it is for our purposes).
         if closing_time < 500:
             self.closing_time = 2400
         else:
@@ -303,14 +332,13 @@ class restaurant:
         self.type = "restaurant"    
 
 def get_movie_objs(data_dict, home, user_start, user_end, travel_mode = 'driving'):
-
+    '''
+    Takes our dictionary of movie data and converts it to a set of 
+    movie objects
+    '''
     movies = set([])
 
-    theatre_count = 0
-
     for theatre in data_dict.keys():
-        #if theatre_count < theatre_max:
-         #   theatre_count += 1
         address = data_dict[theatre]['address']
         (lat,lng) = get_coordinates(address)
         travel_time = get_distance(home.lat, home.lng,lat, lng, travel_mode)
@@ -326,7 +354,10 @@ def get_movie_objs(data_dict, home, user_start, user_end, travel_mode = 'driving
     return movies
 
 def get_restaurant_objs(restaurants):
-
+    '''
+    Takes our list of restaurant tuples from the original SQL database output
+    and converts it to a set of restaurant objects.
+    '''
     rest_objs = set([])
 
     for rest in restaurants:
@@ -343,7 +374,15 @@ def get_restaurant_objs(restaurants):
     return rest_objs
 
 class Node:
-    def __init__(self, data, efficiency = 0, efficient_neighbor = None):
+    '''
+    Node class to be used to represent a graph. Each node contains a data
+    attribute (just the restaurant/movie class), edges--which is represented as
+    a list of tuples with the first entry being the node to which you can travel
+    from this node and the second entry being the time it takes to travel from
+    your current node to this neighbor node--and efficiency, set to 0 for the 
+    time being but is used extensively in the algorithm.
+    '''
+    def __init__(self, data, efficiency = 0):
         self.data = data
         self.edges = []
         self.efficiency = efficiency
@@ -351,20 +390,29 @@ class Node:
         self.edges.append((neighbor, weight))
 
 def get_graph(restaurants, movies, home, travel_mode = 'driving'):
-
+    '''
+    Foremost, we put the home into a node. Then the function takes our set of 
+    restaurant and movie objects, and connects them first to a edge going from 
+    home to each location (you can travel directly from home to any location). 
+    It then connects the node to every other node in the graph of opposite class 
+    (to cut down on computation, we assume the user does not want to watch back-
+    to-back movies or eat back-to-back meals). It then appends the current node
+    to the graph (just a list of nodes) and repeats the process until all movies
+    and restaurants are exhausted. Returns a tuple with the home node as the 
+    first entry and the graph as the second.
+    '''
     graph = []
 
     home = Node(home)
     
-    #weight originally just set to the time of travel
     for movie in movies:
         show = Node(movie)
-        home.add_edge(show, show.data.travel_from_home) #did we do this?
+        home.add_edge(show, show.data.travel_from_home)
         
         for node in graph:
-            #move to movie?
             if node.data.type != 'movie':
-                travel = get_distance(node.data.lat, node.data.lng, movie.lat, movie.lng, travel_mode)
+                travel = get_distance(node.data.lat, node.data.lng, movie.lat, 
+                                                         movie.lng, travel_mode)
                 node.add_edge(show,travel)
                 show.add_edge(node, travel)
 
@@ -372,11 +420,13 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
 
     for restaurant in restaurants:
         eat = Node(restaurant)
-        home.add_edge(eat, get_distance(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng, travel_mode))
+        home.add_edge(eat, get_distance(home.data.lat, home.data.lng, 
+                                   restaurant.lat, restaurant.lng, travel_mode))
 
         for node in graph:
             if node.data.type != 'restaurant':
-                travel = get_distance(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng, travel_mode)
+                travel = get_distance(node.data.lat, node.data.lng, 
+                                    restaurant.lat, restaurant.lng, travel_mode)
                 node.add_edge(eat,travel)
                 eat.add_edge(node, travel)
 
@@ -385,66 +435,108 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
     return (home,graph)
 
 def filter_data(time, end_time, edges, eating_time = 45):
-
+    '''
+    This is a helper function for the movie_and_dinner_algo function. Basically,
+    it takes a current time and all possible maneuvers from the current node and
+    filters the possibilities for those that would put the user over the end of 
+    their allotted schedule. So, we output a set of tuples representing legitmate
+    candidates. The first entry representing the time at the end of that 
+    activity, and the second entry being the node itself.
+    '''
     possible_edges = set([])
 
-    for node in edges:
-        if node[0].data.type == 'movie':
+    for edge in edges:
+        node = edge[0]
+        travel_time = edge[1]
+        if node.data.type == 'movie':
             #can you make it to see the start and can you make it to see the end?
-            arrival = time + node[1]
-            end_of_movie = later(node[0].data.start, node[0].data.run_time)
-            if arrival <= node[0].data.start and end_of_movie < end_time:    
+            arrival = later(time, travel_time)
+            end_of_movie = later(node.data.start, node.data.run_time)
+            if arrival <= node.data.start and end_of_movie < end_time:    
                 possible_edges.add((end_of_movie,node))
-        elif node[0].data.type == 'restaurant':
-            arrival = later(time, node[1])
+        elif node.data.type == 'restaurant':
+            arrival = later(time, travel_time)
             end_of_eating = later(arrival, eating_time)
             #check to see you arrive after it's open, end eating before its closed, and end eating before time is up
-            if arrival > node[0].data.opening_time and end_of_eating < node[0].data.closing_time and end_of_eating < end_time:
+            if arrival > node.data.opening_time and end_of_eating < node.data.closing_time and end_of_eating < end_time:
                 possible_edges.add((end_of_eating, node))
 
     return possible_edges
 
-def movie_and_dinner_algo(graph, home_node, start_time, end_time, efficiency = 0, eating_time = 45):
-
+def movie_and_dinner_algo(graph, home_node, start_time, end_time, efficiency = 0, 
+                                                                eating_time = 45):
+    '''
+    Takes the graph we had developed earlier and recursively traverses each node
+    and all possibilities stemming from this node. When evaluating possible
+    pathways, the algorithm first filters for legitmate possibilities. Then,
+    for all nodes on these possible paths, evaluates the relative efficiency of
+    the current path versus the most efficient path that has yet to reach this 
+    node. For simplicity, we define efficiency as merely the sum of time up to
+    the point in question of either watching a movie or eating food. If the 
+    current pathway is more efficient than the previous, then we consider this
+    node on the current path and set the efficiency of the node as the 
+    current efficiency; elsewise, we drop it as a possibility. We store efficient
+    pathways in a solution dictionary, which is returned. Ties are given to the 
+    path that arrived at the point first, but certainly there could be more 
+    complicated algorithms that use something like total travel time as a 
+    tie-braker. Also, please note that there could also be additional ways to 
+    define efficiency. We chose ours for its simplicity and appreciation of theatre_count
+    outcome.
+    '''
     sol_dict = {}
 
     possible_nodes = filter_data(start_time, end_time, home_node.edges)
 
     if possible_nodes == set([]):
-        return sol_dict #or something else
+        return sol_dict
     else:
-        for node in possible_nodes:
-            if node[1][0].data.type == 'movie': 
-                efficiency += node[1][0].data.run_time
-            elif node[1][0].data.type == 'restaurant':
+        for possibility in possible_nodes:
+            node = possibility[1][0]
+            end_of_task = possibility[0]
+            if node.data.type == 'movie': 
+                efficiency += node.data.run_time
+            elif node.data.type == 'restaurant':
                 efficiency += eating_time
-            if node[1][0].efficiency < efficiency:
-                index = graph.index(node[1][0])
-                graph[index] = node[1][0]
-                sol_dict[node[1][0]] = movie_and_dinner_algo(graph, node[1][0], node[0], end_time, efficiency, eating_time)
+            if node.efficiency < efficiency:
+                index = graph.index(node)
+                graph[index] = node
+                sol_dict[node] = movie_and_dinner_algo(graph, node, end_of_task, 
+                                              end_time, efficiency, eating_time)
 
         return sol_dict
 
-def get_solutions(sol_dict, output_4_adam = []):
-
+def get_solutions(sol_dict, output = []):
+    '''
+    Recurses through our solution dictionary and outputs a list of tuples, with
+    each tuple possessing all the necessary data for output to the user.
+    Basically, this function makes the data into as easy to comprehend form
+    for the website as possible.
+    '''
     if sol_dict == {}:
-        output_4_adam.append('FLAG')
+        #We use the string 'FLAG' to denote where one path stops
+        output.append('FLAG')
     else:
         for node in sol_dict.keys():
             if node.data.type == 'movie':
-                new_tup = (node.data.type, node.data.name, node.data.start, node.data.run_time, node.data.theatre,node.data.lat,node.data.lng)
+                new_tup = (node.data.type, node.data.name, node.data.start, 
+                           node.data.run_time, node.data.theatre,node.data.lat,
+                           node.data.lng)
             if node.data.type == 'restaurant':
-                new_tup = (node.data.type, node.data.name, node.data.price, node.data.rating, node.data.opening_time,node.data.closing_time,node.data.lat, node.data.lng) 
-            output_4_adam.append(new_tup)
-            get_solutions(sol_dict[node], output_4_adam)
+                new_tup = (node.data.type, node.data.name, node.data.price, 
+                           node.data.rating, node.data.opening_time,
+                           node.data.closing_time,node.data.lat, node.data.lng) 
+            output.append(new_tup)
+            get_solutions(sol_dict[node], output)
 
-    return output_4_adam
-
-
+    return output
 
 def go(restaurant_list, user_start, user_end, travel_mode, user_lat, user_lng,
          day_of_week):
-
+    '''
+    This function brings the entire file together, executing all the necessary
+    functions in order to go from user input to user output
+    '''
+    
     home = Home(user_lat, user_lng)
     user_zip = get_zip(user_lat, user_lng)
     movie_data = get_all_movies(user_zip, day_of_week)
