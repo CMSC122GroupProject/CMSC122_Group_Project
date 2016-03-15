@@ -19,13 +19,9 @@ def later(time_start, time_added):
     as the result).
     '''
     min_per_hr = 60
-
     hours_add = time_added // min_per_hr
-
     min_add = time_added % min_per_hr
-
     time_end = time_start + (100 * hours_add) + min_add
-
     return time_end
 
 def get_url_flixster(zip_code, day_of_week):
@@ -37,59 +33,49 @@ def get_url_flixster(zip_code, day_of_week):
 
     days_of_week = {'Sunday': 7, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
                  'Thursday': 4, 'Friday': 5, 'Saturday': 6}
-
     base_url = 'http://igoogle.flixster.com/igoogle/showtimes?movie=all&date='
-
     #use datetime to get the current date of the call
     date = datetime.datetime.now()
-
     today_of_week = date.isoweekday()
-
     days_until_desire = days_of_week[day_of_week] - today_of_week
-
     days_until_desire = min(days_until_desire + 7, days_until_desire)
-
     date_url = date + datetime.timedelta(days=days_until_desire)
-
     date_url = date_url.strftime("%Y%m%d")
-    print(date_url)
-
     zip_url = '&postal='+str(zip_code)+'&submit=Go'
-
     url = base_url + date_url + zip_url
-
     return url
 
 def get_url_fandango(zip_code, day_of_week):
-    
+    '''
+    Find the url corresponding to the zip code and today's day of the week 
+    for movie showtimes
+    '''
     days_of_week = {'Sunday': 7, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
                  'Thursday': 4, 'Friday': 5, 'Saturday': 6}
-
     base = 'http://www.fandango.com/'
     end = '_movietimes?date='
-
     #use datetime to get the current date of the call
     date = datetime.datetime.now()
-
     today_of_week = date.isoweekday()
-
     days_until_desire = days_of_week[day_of_week] - today_of_week
-
     days_until_desire = min(days_until_desire + 7, days_until_desire)
-
     date_url = date + datetime.timedelta(days=days_until_desire)
-
     date_url = date_url.strftime("%m/%d/%Y")
-
     return base + str(zip_code) + end + date_url
 
 def scrub_runtime(runtime):
+    '''
+    Conform the runtime of the film to military time duration
+    '''
     run = runtime[2:-1]
     run = run.split('H')
     run = [int(r) for r in run]
     return run[0] * 100 + run[1]
 
 def scrub_starttime(starttime):
+    '''
+    Conform the start time of the movie to 24hr military time
+    '''
     start = starttime.split('T')[1]
     start = start.split('-')[0]
     time = start.split(':')
@@ -99,7 +85,9 @@ def scrub_starttime(starttime):
     return int(time)
 
 def get_movies_fandango(url, theatre_max = 3):
-    
+    '''
+    Scrape fandango for movies given the url. Output to a dictionary.
+    '''
     theatre_count = 1
     data_dict = {}
     data = requests.get(url)
@@ -137,6 +125,9 @@ def get_movies_fandango(url, theatre_max = 3):
     return data_dict
 
 def clean_runtime(runtime):
+    '''
+    Same function as scrub_runtime, but customized to handle Fandango's runtimes 
+    '''
     runtime = runtime.split()
     if runtime[0][0] == 'R':
         return None
@@ -150,7 +141,9 @@ def clean_runtime(runtime):
     return hours * 100 + minutes
 
 def clean_starttime(start):
-    
+    '''
+    Same function as scrub_starttime, but customized to handle Fandango's runtimes 
+    '''
     pm = 1200
     if start[-2:] == 'am':
         start = start[:-2]
@@ -166,10 +159,9 @@ def clean_starttime(start):
     return start
 
 def get_movies_flixster(url, theatre_max = 3):
-
     '''
-
-    #Example usage of site
+    Retrieves flixster's movie showtimes for the given url
+    Example usage of site
     Example_url = 'http://igoogle.flixster.com/igoogle/showtimes?movie=all&date=20160303&postal=21228&submit=Go'
 
     Ex_dict = {Theatre_name:{address:'', movies:{A:[time_1, time_2, time_3], B:[...]}}}
@@ -238,6 +230,13 @@ def get_movies_flixster(url, theatre_max = 3):
     return data_dict
 
 def get_all_movies(zipcode, day_of_week):
+    '''
+    Invokes both movie scraper functions based on today's day of the week and a given zipcode
+    to return a giant dictionary of all theaters and films.
+
+    Double-counting of movie theaters is only possible if the same theater is spelled 
+    differently in Fandango than in Flixster (e.g. 'Carmikes' vs. 'Carmike's')
+    '''
     fan = get_movies_fandango(get_url_fandango(zipcode, day_of_week))
     flix = get_movies_flixster(get_url_flixster(zipcode, day_of_week))
     for k in flix:
@@ -259,14 +258,10 @@ class movie:
         self.lat = lat  
         self.lng = lng
         self.travel_from_home = travel_from_home
-        self.type = 'movie' #might not need this
-    #def update_travel_from_home(self, distance):
-     #   self.travel_from_home = distance
+        self.type = 'movie' 
 
 class restaurant:
     def __init__(self, name, price, rating, opening_time, closing_time, lat, lng, type = 'restaurant'):
-        #self.unique_id = Restaurant_id
-        #Restaurant_id += 1
         self.name = name
         self.price = price
         self.rating = rating
@@ -430,5 +425,4 @@ def go(restaurant_list, user_start, user_end, travel_mode, user_lat, user_lng,
     (home_node, graph_of_travels) = get_graph(rest_objs, movie_objs, home, travel_mode)
     sol_dict = movie_and_dinner_algo(graph_of_travels, home_node, user_start, user_end)
     output = get_solutions(sol_dict)
-
     return output 
