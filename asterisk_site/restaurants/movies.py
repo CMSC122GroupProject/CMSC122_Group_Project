@@ -16,7 +16,7 @@ def later(time_start, time_added):
     Because all times are written in military, we devise this function to add
     time (in minutes) to any given start time (for example, we may want to add 
     105 minutes to a time_start of 800. This function would yield the time 945
-    as the result)
+    as the result).
     '''
     min_per_hr = 60
 
@@ -28,12 +28,31 @@ def later(time_start, time_added):
 
     return time_end
 
-def get_url_flixster(zip_code):
+def get_url_flixster(zip_code, day_of_week):
+    '''
+    Generates a url for flixster so we can scrape movietimes and locations. The 
+    url requires just a home zipcode, which we generate from the get_zip function 
+    on Maps.py
+    '''
+
+    days_of_week = {'Sunday': 7, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
+                 'Thursday': 4, 'Friday': 5, 'Saturday': 6}
 
     base_url = 'http://igoogle.flixster.com/igoogle/showtimes?movie=all&date='
 
+    #use datetime to get the current date of the call
     date = datetime.datetime.now()
-    date_url = date.strftime("%Y%m%d")
+
+    today_of_week = date.isoweekday()
+
+    days_until_desire = days_of_week[day_of_week] - today_of_week
+
+    days_until_desire = min(days_until_desire + 7, days_until_desire)
+
+    date_url = date + datetime.timedelta(days=days_until_desire)
+
+    date_url = date_url.strftime("%Y%m%d")
+    print(date_url)
 
     zip_url = '&postal='+str(zip_code)+'&submit=Go'
 
@@ -41,10 +60,28 @@ def get_url_flixster(zip_code):
 
     return url
 
-def get_url_fandango(zip_code):
+def get_url_fandango(zip_code, day_of_week):
+    
+    days_of_week = {'Sunday': 7, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
+                 'Thursday': 4, 'Friday': 5, 'Saturday': 6}
+
     base = 'http://www.fandango.com/'
-    end = '_movietimes'
-    return base + str(zip_code) + end
+    end = '_movietimes?date='
+
+    #use datetime to get the current date of the call
+    date = datetime.datetime.now()
+
+    today_of_week = date.isoweekday()
+
+    days_until_desire = days_of_week[day_of_week] - today_of_week
+
+    days_until_desire = min(days_until_desire + 7, days_until_desire)
+
+    date_url = date + datetime.timedelta(days=days_until_desire)
+
+    date_url = date_url.strftime("%m/%d/%Y")
+
+    return base + str(zip_code) + end + date_url
 
 def scrub_runtime(runtime):
     run = runtime[2:-1]
@@ -200,9 +237,9 @@ def get_movies_flixster(url, theatre_max = 3):
 
     return data_dict
 
-def get_all_movies(zipcode):
-    fan = get_movies_fandango(get_url_fandango(zipcode))
-    flix = get_movies_flixster(get_url_flixster(zipcode))
+def get_all_movies(zipcode, day_of_week):
+    fan = get_movies_fandango(get_url_fandango(zipcode, day_of_week))
+    flix = get_movies_flixster(get_url_flixster(zipcode, day_of_week))
     for k in flix:
         fan[k] = flix[k]
     return fan
@@ -287,7 +324,6 @@ class Node:
         self.data = data
         self.edges = []
         self.efficiency = efficiency
-        self.efficient_neighbor = efficient_neighbor
     def add_edge(self, neighbor, weight):
         self.edges.append((neighbor, weight))
 
@@ -383,11 +419,12 @@ def get_solutions(sol_dict, output_4_adam = []):
 
 
 
-def go(restaurant_list, user_start, user_end, travel_mode, user_lat, user_lng):
+def go(restaurant_list, user_start, user_end, travel_mode, user_lat, user_lng,
+         day_of_week):
 
     home = Home(user_lat, user_lng)
     user_zip = get_zip(user_lat, user_lng)
-    movie_data = get_all_movies(user_zip)
+    movie_data = get_all_movies(user_zip, day_of_week)
     movie_objs = get_movie_objs(movie_data, home, user_start, user_end, travel_mode)
     rest_objs = get_restaurant_objs(restaurant_list)
     (home_node, graph_of_travels) = get_graph(rest_objs, movie_objs, home, travel_mode)
@@ -395,124 +432,3 @@ def go(restaurant_list, user_start, user_end, travel_mode, user_lat, user_lng):
     output = get_solutions(sol_dict)
 
     return output 
-
-'''
-def get_efficiency_dict(graphs):
-    paths = {}
-
-    for node in graph:
-        paths[node] = (0,[])
-
-    return paths
-
-def movie_and_dinner_algo(graph, efficiency_start, start_node, start_time, end_time, paths, eating_time = 45):
-    #should start on home
-    #dictionary with paths as keys and efficiencies as values
-    #paths = {node:(efficiency,[efficient neighbors])}
-    print(start_node)
-    possible_edges = filter_data(start_time, end_time, start_node.edges, eating_time)
-    if possible_edges == set([]):
-        return paths
-    else:
-        node = possible_edges.pop()
-        efficiency = efficiency_start
-        if node[1][0].data.type == 'movie':
-            efficiency += node[1][0].data.run_time
-        elif node[1][0].data.type == 'restaurant':
-            efficiency += eating_time 
-        if efficiency > paths[node[1]][0]:
-            print(paths[node[1]][0])
-            paths[node[1]][0] = efficiency
-            paths[node[1]][1].append(start_node.data.name) #i think this will work
-            paths.append(movie_and_dinner_algo(graph, efficiency, node[1][0], node[0], end_time, paths, eating_time))
-        else:
-            return paths
-
-
-
-def movie_and_dinner_algo(graph, efficiency_start, start_node, start_time, end_time, edges, eating_time = 45):
-    #should start on home
-    
-    paths = {}
-
-    print(start_node)
-    possible_edges = filter_data(start_time, end_time, start_node.edges, possible_edges, eating_time)
-    if possible_edges == set([]):
-        return graph
-    else:
-        node = possible_edges.pop()
-        efficiency = efficiency_start
-        if node[1][0].data.type == 'movie':
-            efficiency += node[1][0].data.run_time
-        elif node[1][0].data.type == 'restaurant':
-            efficiency += eating_time 
-        if efficiency > node[1][0].efficiency:
-            index = graph.index(node[1][0])
-            node[1][0].data.efficiency = efficiency
-            node[1][0].data.efficient_neighbor = start_node.data.name #i think this will work
-            graph[index] = node[1][0]
-            for nodie in graph:
-                print(nodie.efficient_neighbor)
-            return movie_and_dinner_algo(graph, efficiency, node[1][0], node[0], end_time, edges, eating_time)
-
-
-def movie_and_dinner_algo(graph, home, start_time, end_time, eating_time = 45):
-
-    travel_graph = set(graph)
-    visited = {home:0}
-    solution_path = {}
-    #filter for possible moves
-    possible_firsts = filter_data(home.edges)
-    
-    block_time = end_time - start_time
-    for node in possible_firsts:
-        travel_queue.put((block_time, node))
-
-    time = start_time
-
-    while travel_graph != []:
-        shortest_path = None
-        possible_edges = filter_data(time, loc.edges)
-        for dest in possible_edges:
-            if dest in visited:
-                if shortest_path == None:
-                    shortest_path = dest
-                elif visited[dest] < visited[shortest_path]:
-                    shortest_path = dest
-
-        if shortest_path == None:
-            break
-
-        travel_graph.remove(shortest_path)
-        current_weight = visited[shortest_path]
-
-        if shortest_path.type == 'movie':
-            time = time + shortest_path.run_time
-
-        time = time + shortest_path
-
-        possible_next = filter_data(time, shortest_path.edges)
-        for edge in possible_next: #probably wrong . form
-
-
-            new_path = loc[0] + dest[1]
-            if dest in visited.keys():
-                if new_path <= visited[dest]:
-                    pass
-
-    return possible_list
-
-
-def dijsktra(graph, initial):
-
-    nodes.remove(min_node)
-    current_weight = visited[min_node]
-
-    for edge in graph.edges[min_node]:
-      weight = current_weight + graph.distance[(min_node, edge)]
-      if edge not in visited or weight < visited[edge]:
-        visited[edge] = weight
-        path[edge] = min_node
-
-  return visited, path
-  '''
