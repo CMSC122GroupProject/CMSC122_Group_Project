@@ -5,11 +5,8 @@ import sqlite3
 import os
 import re
 
-#DATA_DIR = os.path.dirname(__file__)
-#DATABASE_FILENAME = os.path.join(DATA_DIR, 'Yelp/restaurants.db')
-#DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
-DATABASE_FILENAME = 'restaurants.db'
-
+DATA_DIR = str(os.getcwd())
+DATABASE_FILENAME = DATA_DIR + '/restaurants/restaurants.db'
 
 dict_api = {'yelp' : ['name_id', 'price', 'rating', 'comments'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
             'f_closed', 'sat_open', 'sat_closed', 'sun_open', 'sun_closed', 'name_id'], 'maps' : ['lon', 'lat', 'name_id']}
@@ -133,7 +130,6 @@ def query_where(sample):
                 day = i[0]
                 what_list.append(dict_what[i])
                 where_param.append("_".join((day, 'open')))
-                print("_".join((day, 'open')))
                 where_param.append(i)
             else:
                 what_list.append(dict_what[i])
