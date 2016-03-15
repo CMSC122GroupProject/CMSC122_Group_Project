@@ -1,4 +1,4 @@
-# sql_maker.py
+# sql_maker.py - Original Code
 # Author: Ken Jung
 # Description: Puts the contents of the restaurants json dictionary and puts them
 # into a sql database, implementing nltk in the process
@@ -95,7 +95,6 @@ def go(read_in, write_to):
         args_yelp[i] = tuple(args_yelp[i])
         args_time[i] = tuple(args_time[i])
         args_maps[i] = tuple(args_maps[i])
-
     for i in range(n):
         c.execute("INSERT INTO yelp (name_id, price, rating, comments, id)  VALUES (?, ?, ?, ?, ?);", args_yelp[i])
         c.execute("INSERT INTO time" + timelist + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", args_time[i])
