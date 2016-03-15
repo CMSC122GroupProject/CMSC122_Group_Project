@@ -1,4 +1,4 @@
-#DOCUMENTAION~ORIGINAL (written mainly by Adam Sudit, with help from Ken Jung)
+#DOCUMENTATION~ORIGINAL (written mainly by Adam Sudit, with help from Ken Jung)
 
 
 import sqlite3
@@ -7,8 +7,8 @@ import re
 
 #DATA_DIR = os.path.dirname(__file__)
 #DATABASE_FILENAME = os.path.join(DATA_DIR, 'Yelp/restaurants.db')
-DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
-#DATABASE_FILENAME = '/home/student/CMSC122_Group_Project/asterisk_site/restaurants.db'
+#DATABASE_FILENAME = '/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
+DATABASE_FILENAME = 'restaurants.db'
 
 
 dict_api = {'yelp' : ['name_id', 'price', 'rating', 'comments'], 'time' : ['m_open', 'm_closed', 't_open', 't_closed', 'w_open', 'w_closed', 'r_open', 'r_closed', 'f_open',
