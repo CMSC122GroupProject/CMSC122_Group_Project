@@ -1,21 +1,32 @@
+#DOCUMENTATION~ORIGINAL (authored by Ken Jung and Brandon Dixon)
+
+#This file handes all of the movie implementation of our project. From scraping
+#the websites to algorthmically selecting an optimal restaurant-movie schedule.
+
 import bs4
 import requests
 import datetime
 import sys
 import queue
-from .Maps import hsine, get_coordinates, travel_time
+from Maps import get_distance, hsine, get_coordinates, travel_time, get_zip
+#took away . from .Maps
 
-def later(t1, t2):
-    h1 = int(t1 / 100)
-    h2 = int(t2 / 100)
-    m1 = t1 % 100
-    m2 = t2 % 100
-    m = m1 + m2
-    hn = int(m / 60)
-    rm = m - hn * m
-    h = h1 + h2 + hn
-    m = rm
-    return(h * 100 + m)
+def later(time_start, time_added):
+    '''
+    Because all times are written in military, we devise this function to add
+    time (in minutes) to any given start time (for example, we may want to add 
+    105 minutes to a time_start of 800. This function would yield the time 945
+    as the result)
+    '''
+    min_per_hr = 60
+
+    hours_add = time_added // min_per_hr
+
+    min_add = time_added % min_per_hr
+
+    time_end = time_start + (100 * hours_add) + min_add
+
+    return time_end
 
 def get_url_flixster(zip_code):
 
@@ -242,7 +253,7 @@ def get_movie_objs(data_dict, home, user_start, user_end, travel_mode = 'driving
          #   theatre_count += 1
         address = data_dict[theatre]['address']
         (lat,lng) = get_coordinates(address)
-        travel_time = hsine(home.lat, home.lng,lat, lng, travel_mode)
+        travel_time = get_distance(home.lat, home.lng,lat, lng, travel_mode)
         if user_start + travel_time < user_end:
             for name in data_dict[theatre]['movies'].keys():
                 run_time = data_dict[theatre]['movies'][name]['run_time']
@@ -294,7 +305,7 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
         for node in graph:
             #move to movie?
             if node.data.type != 'movie':
-                travel = hsine(node.data.lat, node.data.lng, movie.lat, movie.lng, travel_mode)
+                travel = get_distance(node.data.lat, node.data.lng, movie.lat, movie.lng, travel_mode)
                 node.add_edge(show,travel)
                 show.add_edge(node, travel)
 
@@ -302,11 +313,11 @@ def get_graph(restaurants, movies, home, travel_mode = 'driving'):
 
     for restaurant in restaurants:
         eat = Node(restaurant)
-        home.add_edge(eat, hsine(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng, travel_mode))
+        home.add_edge(eat, get_distance(home.data.lat, home.data.lng, restaurant.lat, restaurant.lng, travel_mode))
 
         for node in graph:
             if node.data.type != 'restaurant':
-                travel = hsine(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng, travel_mode)
+                travel = get_distance(node.data.lat, node.data.lng, restaurant.lat, restaurant.lng, travel_mode)
                 node.add_edge(eat,travel)
                 eat.add_edge(node, travel)
 
@@ -322,12 +333,12 @@ def filter_data(time, end_time, edges, eating_time = 45):
         if node[0].data.type == 'movie':
             #can you make it to see the start and can you make it to see the end?
             arrival = time + node[1]
-            end_of_movie = node[0].data.start + node[0].data.run_time
+            end_of_movie = later(node[0].data.start, node[0].data.run_time)
             if arrival <= node[0].data.start and end_of_movie < end_time:    
                 possible_edges.add((end_of_movie,node))
         elif node[0].data.type == 'restaurant':
-            arrival = time + node[1]
-            end_of_eating = arrival + eating_time
+            arrival = later(time, node[1])
+            end_of_eating = later(arrival, eating_time)
             #check to see you arrive after it's open, end eating before its closed, and end eating before time is up
             if arrival > node[0].data.opening_time and end_of_eating < node[0].data.closing_time and end_of_eating < end_time:
                 possible_edges.add((end_of_eating, node))
@@ -372,10 +383,10 @@ def get_solutions(sol_dict, output_4_adam = []):
 
 
 
-def go(restaurant_list, user_start, user_end, travel_mode, user_lat, user_lng, user_zip):
+def go(restaurant_list, user_start, user_end, travel_mode, user_lat, user_lng):
 
     home = Home(user_lat, user_lng)
-
+    user_zip = get_zip(user_lat, user_lng)
     movie_data = get_all_movies(user_zip)
     movie_objs = get_movie_objs(movie_data, home, user_start, user_end, travel_mode)
     rest_objs = get_restaurant_objs(restaurant_list)
