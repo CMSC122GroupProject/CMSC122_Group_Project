@@ -5,8 +5,8 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Dine_query
 from .forms import DineQueryForm
-from .asterisk_pre_algo import dict_api, desired_output, tables, dict_what, DATABASE_FILENAME
-from .asterisk_pre_algo import query_relations, query_join, query_where, query_select, prelim_assembly, prelim_algorithm, algorithm
+from .query_maker import dict_api, desired_output, tables, dict_what, DATABASE_FILENAME
+from .query_maker import query_relations, query_join, query_where, query_select, prelim_assembly, prelim_algorithm, algorithm
 import googlemaps
 from .movies import go, movie, restaurant
 
@@ -21,7 +21,7 @@ day_dict = {'Monday': ('m_open', 'm_closed'), 'Tuesday': ('t_open', 't_closed'),
 def process_query(request, query):
     '''
     given a query object created by filling out the form, this function
-    generates a input dictionary for the prelim-algorithm function in asterisk_pre_algo.py
+    generates a input dictionary for the prelim-algorithm function in query_maker.py
     '''
     day = query.day
     times = day_dict[day]
