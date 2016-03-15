@@ -8,7 +8,7 @@ import requests
 import datetime
 import sys
 import queue
-from Maps import get_distance, hsine, get_coordinates, travel_time, get_zip
+from .Maps import get_distance, hsine, get_coordinates, travel_time, get_zip
 #took away . from .Maps
 
 def later(time_start, time_added):
@@ -28,9 +28,10 @@ def get_url_flixster(zip_code, day_of_week):
     '''
     Generates a url for flixster so we can scrape movietimes and locations. The 
     url requires just a home zipcode, which we generate from the get_zip function 
-    on Maps.py
+    on Maps.py, and the day of the week the user wishes to plan their journey
     '''
 
+    #dictionary assigning a number to each day of the week
     days_of_week = {'Sunday': 7, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
                  'Thursday': 4, 'Friday': 5, 'Saturday': 6}
     base_url = 'http://igoogle.flixster.com/igoogle/showtimes?movie=all&date='
@@ -41,6 +42,20 @@ def get_url_flixster(zip_code, day_of_week):
     days_until_desire = min(days_until_desire + 7, days_until_desire)
     date_url = date + datetime.timedelta(days=days_until_desire)
     date_url = date_url.strftime("%Y%m%d")
+
+    #gets the number of days between now and the user's desired day of the week
+    days_until_desire = days_of_week[day_of_week] - today_of_week
+
+    #if days_until_desire is negative (for instance planning a Tuesday evening
+    # on a Sunday, then add 7 days to get the number of days between the two)
+    days_until_desire = min(days_until_desire + 7, days_until_desire)
+
+    #finally, use the timedelta method to add days
+    date_url = date + datetime.timedelta(days=days_until_desire)
+
+    #output the date in the format for the url
+    date_url = date_url.strftime("%Y%m%d")
+
     zip_url = '&postal='+str(zip_code)+'&submit=Go'
     url = base_url + date_url + zip_url
     return url
@@ -49,6 +64,10 @@ def get_url_fandango(zip_code, day_of_week):
     '''
     Find the url corresponding to the zip code and today's day of the week 
     for movie showtimes
+
+    We scrape from both flixster and fandango (together, they have both major
+    theatres in Hyde Park: Harper and Doc Films), so we perform the exact 
+    same get_url function for fandango, using fandango's url style 
     '''
     days_of_week = {'Sunday': 7, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
                  'Thursday': 4, 'Friday': 5, 'Saturday': 6}
@@ -66,6 +85,11 @@ def get_url_fandango(zip_code, day_of_week):
 def scrub_runtime(runtime):
     '''
     Conform the runtime of the film to military time duration
+
+    The runtime output for the movie scrapes comes in the form "x hours and y 
+    minutes." Obviously, this isn't very helpful for our purposes, so we use 
+    this function to scrub the runtime strings into integers representing
+    the number of minutes for a movie's runtime.
     '''
     run = runtime[2:-1]
     run = run.split('H')
@@ -75,6 +99,10 @@ def scrub_runtime(runtime):
 def scrub_starttime(starttime):
     '''
     Conform the start time of the movie to 24hr military time
+
+    Similarly to the runtime output, the starttime is also stored as a not-so-
+    useful string. We use this function to store the movie starttime as a string
+    representing each movie's starttime in military form
     '''
     start = starttime.split('T')[1]
     start = start.split('-')[0]
