@@ -1,2 +1,0 @@
-gmaps = googlemaps.Client(key='AIzaSyCCq8R92CqW_Yse1j7vOQ0NdmDNsdzh5ek')
-
