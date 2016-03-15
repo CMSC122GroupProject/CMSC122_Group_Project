@@ -91,7 +91,7 @@ def movies_query_list(request):
                 day_table = key
                 break
 
-        brandon = go(movie_output, query.opening_time, query.closing_time, query.transport_by, query.latitude, query.longitude, 60615)
+        brandon = go(movie_output, query.opening_time, query.closing_time, query.transport_by, query.latitude, query.longitude, query.day)
         rv = 0
         longest_list = 0
         dict_movies = {}
