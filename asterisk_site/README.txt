@@ -11,11 +11,7 @@ Since our project runs on Django, please make sure you have the most up-to-date 
 
 
 PATHS:
-It is important that for asterisk_pre_algo.py to work (in the restaurants app directory), the path to restaurants.db within the asterisk_site directory
-is correctly specified. At the top of the py file, the file path is specified as: 
-'/home/student/cs122-win-16-asudit/CMSC122_Group_Project/asterisk_site/restaurants.db'
-
-Similarly, it is imperative that the locations of the modules and files are in the right location with respect to each other.
+It is imperative that the locations of the modules and files are in the right location with respect to each other.
 In particular, asterisk_pre_algo.py, models.py, and views.py in the restaurants directory all call upon functions from each other, googlemaps,
 and movies.py (among others). Thus, please make sure your directory looks like ours
 
