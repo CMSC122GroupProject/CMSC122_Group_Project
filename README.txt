@@ -7,6 +7,12 @@ INSTALLATION:
 You'll need to install the googlemaps-services-python module, because often use googlemaps package. 
 We did this by git cloning from the following git page: https://github.com/googlemaps/google-maps-services-python.
 
+In order to create a fresh restaurants database in place of the one provided, NLTK must be installed. In addition, the WordNet corpus must be downloaded, which can be done using the command :
+    
+    nltk.download()
+
+and then selecting all packages.
+
 Since our project runs on Django, please make sure you have the most up-to-date version of it.
 
 
@@ -30,7 +36,7 @@ IMPORTANT COMMENTS:
 GENERAL INTUITION FOR HOW CODE WORKS:
 The functions of key files have descriptions of what the functions do, but we outline this for you here as well:
 -The first portion of our code is a basic yelp scraper. It starts on a certain search page (in our case, we used Hyde Park Restaurants) and gathers all urls of every business. Using all these urls, it goes from business to business, and if the business's yelp page has all necessary details (e.g. a restaurant without hours does not help us), we scrape their data directly from the html through requests/BeautifulSoup. The result is a dictionary, which we json.dump.
--The resulting json file scraped from yelp is processed into a database using Yelp/sql_maker.py. This file incorporates the Wordnet corpus of NLTK in order to create the column of the "yelp" table that contains synonyms of words found from reviews
+-The resulting json file scraped from yelp is processed into a database using Yelp/sql_maker.py. This file incorporates the Wordnet corpus of NLTK in order to create the column of the "yelp" table that contains synonyms of words found from reviews. 
 -Flixster/Fandango data are scraped using asterisk_site/restaurants/movies.py. The scraper is straightforward, requiring only a zip code and a day of the week.
 -Once the YELP data has been processed into a database within the asterisk_site directory, asterisk_pre_algo.py takes a sample_dictionary
 that constains the search parameters of the user's query and generates a SQL query. This query is then run through the database. A list
