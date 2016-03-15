@@ -27,14 +27,15 @@ link to begin using the site
 
 
 IMPORTANT COMMENTS:
--so that the code runs faster, we limited the SQL query to 5 restaurant results. This can easily be changed by altering
-    the prelim-assembly function in asterisk_pre_algo.py 
+-so that the code runs faster, we limited the SQL query to 5 restaurant results. This can easily be changed by altering the prelim-assembly function in asterisk_pre_algo.py 
 -usage of the actually Django site, including how to correctly fill out the form and navigating between pages, is clearly detailed within the website
 -in case you'd like to access the admin site of the interface, you'll need- username: asudit  password: Anightonthetown
 
 GENERAL INTUITION FOR HOW CODE WORKS:
 The functions of key files have descriptions of what the functions do, but we outline this for you here as well:
--BRANDON/KEN~insert how the data is scraped and made into databases here. Reference pertinent files that do this!!!
+-Yelp scraping DESCRIBE???
+-The resulting json file scraped from yelp is processed into a database using Yelp/sql_maker.py. This file incorporates the Wordnet corpus of NLTK in order to create the column of the "yelp" table that contains synonyms of words found from reviews
+-Flixster/Fandango data are scraped using asterisk_site/restaurants/movies.py. The scraper is straightforward, requiring only a zip code and a day of the week.
 -Once the YELP data has been processed into a database within the asterisk_site directory, asterisk_pre_algo.py takes a sample_dictionary
 that constains the search parameters of the user's query and generates a SQL query. This query is then run through the database. A list
 of restaurants with descriptors like price and ratings is then returned. This is more or less what the table on the Restaurant Queries page contains.
