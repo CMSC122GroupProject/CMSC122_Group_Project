@@ -1,0 +1,62 @@
+<!-- DOCUMENTATION~MODIFIED: Css based on Django Girls like other HTML files, but I wrote the text/formatting -besides 
+the insertion of the photo at the bottom, which came from "fig caption"  documentation etc -->
+
+{% load staticfiles %}
+<html >
+    <head>
+        <title>Aster*sk Restaurant Queries</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/restaurants.css' %}">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rancho&effect=shadow-multiple">
+
+    </head>
+    <div>
+
+        <h1 class = "page-header">  Aster*sk Project </h1>
+        <p> <strong> The perfect start to every night on the town </strong> </p> 
+    </div>
+
+    <body >
+        <div>
+            <h2>  About Us  </h2>
+            <p> A little bit about our project: </p>
+
+            <div> 
+            As students at the University of Chicago, we often found ourselves looking for the best place to eat dinner. We had multiple preferences and
+            constraints that influenced our choice: time frame, desired quality, and budget. We realized that while google and yelp could provide us
+            with information on all these search parameters, no efficient method existed for finding all restaurants that fit our search criteria.
+            Hence, the Aster*sk Project was born. The original conceptualization-inputing restaurant criteria and returning restaurant results-is 
+            implemented on the restaurants page of this site. To access it, click on the <strong> first link on the forms page </strong>.
+            <br></br>
+
+            The Aster*sk Experience is newest extension of our original application. We wanted to answer the following question: given a block of time,
+            what is the most efficient way to spend my time between movies and restaurant experiences in the general Hyde Park area. Using a proprietary
+            Least-Cost Algorithm, we are able to acheive this goal. To access this extension, click on the <strong> second link on the forms page</strong>.
+            
+            </div>
+
+            <br> </br>
+
+            <div>
+
+                
+                <h2s>   <a href="{% url 'dine_query_new' %}">Aster*sk Form </a>   </h2>
+
+
+            </div>
+            <br></br>
+
+            
+            <figure>
+                <img src='http://www.watiky.com/wp-content/uploads/2014/10/happy-people.jpg' alt='missing' />
+                <figcaption>Some satisfied users of the Aster*sk Experience</figcaption>
+            </figure>
+
+        </div>
+                    
+    </body>
+
+
+
+</html>

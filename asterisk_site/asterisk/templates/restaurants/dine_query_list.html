@@ -1,0 +1,64 @@
+<!-- DOCUMENTATION~MODIFIED: though the css links are from DjangoGirls, the loops and formating (tables for example) 
+are original, using common HTML syntax but not copied directly from anywhere   -->
+{% load staticfiles %}
+<html >
+    <head>
+        <title>Aster*sk Restaurant Queries</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/restaurants.css' %}">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rancho&effect=shadow-multiple">
+
+    </head>
+    <div>
+
+        <h1 class = "page-header">  Aster*sk Project </h1>
+        <p> <strong> The perfect start to every night on the town </strong> </p> 
+    </div>
+    <body >
+        <div>
+
+            <h2>  Restaurant Queries  </h2>
+            <p> Use the link below to search for optimal restaurants, given your parameters. </p>
+
+
+        
+
+            <div>
+
+                <h5>   <a href="{% url 'dine_query_new' %}">New Restaurant Query Form</a>   </h5>
+            </div>
+            <br></br>
+            
+            
+
+            <p> Processed queries are also below: </p>
+        
+
+            <table  id = " t01">
+                <tr class = 'tr'>
+                {%    for head in headers     %}   
+                    <th class = "th"> {{head}} </th>
+                    
+                {%  endfor  %} 
+                {% for time in timing  %}
+                    <th class = "th"> {{time}} </th>
+                {% endfor %}
+                </tr>
+                {% for result in dining_query_results %}
+            
+                <tr> 
+                    {% for entry in result %} 
+                    <td class = "td"> {{entry}} </td>
+                     
+
+                    {% endfor %}
+
+                </tr>
+                
+                {%  endfor %}
+            </table>
+            
+        </div>
+    </body>
+</html>

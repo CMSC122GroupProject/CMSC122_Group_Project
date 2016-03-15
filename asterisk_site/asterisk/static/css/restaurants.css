@@ -1,0 +1,37 @@
+/****"DOCUMENTATION: MODIFIED-based heavily on DjangoGirls Tutorial, customized specifically for our project" ****/
+
+
+h1  {
+    
+    color: #26BDBF;
+    font-family: 'Rancho';
+}
+
+h2, h5 a, h3 a {
+
+    color: #000000;
+    font-family: 'Rancho';
+}
+
+body {
+    padding-left: 15px;
+}
+
+.page-header {
+    background-image: url(http://alikgriffin.com/sites/default/files/AlikGriffin_Santa_Monica_Pier_HDR_s.jpg);
+    margin-top: 0;
+    padding: 20px 20px 20px 40px;
+
+}
+
+.page-header h1 {
+
+    color: #ffffff;
+    font-size: 36pt;
+    text-decoration: none;
+}
+
+table ,th, td, tr {
+    border: 1px solid black;
+}
+

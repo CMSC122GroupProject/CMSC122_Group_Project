@@ -1,0 +1,69 @@
+<!-- DOCUMENTATION~MODIFIED: Django Girls for css magic, but formating and text similarly to other HTML, I wrote   -->
+
+{% load staticfiles %}
+<html >
+    <head>
+        <title>Aster*sk Restaurant Queries</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/restaurants.css' %}">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rancho&effect=shadow-multiple">
+
+    </head>
+    <div>
+
+        <h1 class = "page-header">  Aster*sk Project </h1>
+        <p> <strong> The perfect start to every night on the town </strong> </p> 
+    </div>
+    <body >
+        <div>
+            <h2>  The Aster*sk Experience: Movie and Restaurant Queries  </h2>
+            <p> Use the link below to search for the best way to divide your time between dinner and movies: </p>
+
+            <div>
+
+                <h5>   <a href="{% url 'dine_query_new' %}">New Query Form</a>   </h5>
+            </div>
+            <br></br>
+
+            <p> Processed queries are also below: </p>
+        </div>
+        <table  id = " t01">
+                <tr class = 'tr'>
+                {%    for head in header_num    %}   
+                    <th class = "th"> {{head}} </th>
+                    
+                    
+                                                    
+
+                {%  endfor  %}  
+                </tr> 
+                {% for result in movie_row %}
+                    
+                <tr class = 'tr'> 
+                    {% for entry in result %} 
+                        
+                        <td class = "td"> 
+                        <ul>
+                        {%    for tuples in   entry    %}
+
+                            
+                                <li> {{tuples}} </li>
+
+                        {%   endfor  %}
+                        </ul>
+                        </td>
+                     
+                    
+                    {%   endfor  %}
+                    
+
+                </tr>
+                
+                {%  endfor %}
+        </table>             
+    
+
+
+    </body>
+</html> 
